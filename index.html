@@ -172,7 +172,7 @@
         ];
 
         const STATS = ['Forza', 'Destrezza', 'Costituzione', 'Intelligenza', 'Saggezza', 'Carisma'];
-        const ITEM_TYPES = ['Generico', 'Arma', 'Armatura', 'Pozione', 'Oggetto Magico'];
+        const ITEM_TYPES = ['Generico', 'Arma', 'Armatura', 'Pozione', 'Oggetto Magico', 'Oggetto Chiave', 'Strumento'];
 
         const getModifier = (score) => {
             const mod = Math.floor(((score || 10) - 10) / 2);
@@ -412,6 +412,19 @@
                 }));
             };
 
+            // Filtraggio oggetti per sezioni
+            const combatItems = char.inventory ? char.inventory.filter(i => ['Arma', 'Armatura'].includes(i.type)) : [];
+            const generalItems = char.inventory ? char.inventory.filter(i => !['Arma', 'Armatura'].includes(i.type)) : [];
+            
+            // Helper stile tag
+            const getTagStyle = (type) => {
+                if (type === 'Pozione') return 'text-pink-400 bg-pink-500/10 border-pink-500/20';
+                if (type === 'Oggetto Magico') return 'text-purple-400 bg-purple-500/10 border-purple-500/20';
+                if (type === 'Oggetto Chiave') return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                if (type === 'Strumento') return 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20';
+                return 'text-slate-400 bg-slate-800 border-slate-700';
+            };
+
             return (
                 <div className="animate-fade-in w-full max-w-4xl mx-auto pb-24">
                     <div className="flex items-center justify-between mb-6 sticky top-0 bg-slate-900/95 backdrop-blur z-20 py-4 border-b border-slate-800">
@@ -591,45 +604,76 @@
                                         </div>
                                     </div>
 
-                                    {/* Lista Oggetti */}
-                                    <div>
-                                        <h3 className="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">
-                                            <Backpack size={20} className="text-amber-500"/> Equipaggiamento
-                                        </h3>
-                                        
-                                        <div className="bg-slate-900 p-4 rounded-lg border border-slate-700 mb-4">
-                                            <div className="flex gap-2 mb-2 items-end">
-                                                <div className="flex-1">
-                                                    <label className="text-xs text-slate-500 font-bold">Nome Oggetto</label>
-                                                    <input type="text" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} 
-                                                        placeholder="Es. Spada Corta" className="w-full bg-slate-800 p-2 rounded text-sm border border-slate-600 outline-none text-white"/>
-                                                </div>
-                                                <div className="w-32">
-                                                    <label className="text-xs text-slate-500 font-bold">Tipo</label>
-                                                    <select value={newItem.type} onChange={e => setNewItem({...newItem, type: e.target.value})}
-                                                        className="w-full bg-slate-800 p-2 rounded text-sm border border-slate-600 outline-none text-white">
-                                                        {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                                                    </select>
-                                                </div>
-                                                <div className="w-16">
-                                                    <label className="text-xs text-slate-500 font-bold">Q.tà</label>
-                                                    <input type="number" value={newItem.qty} onChange={e => setNewItem({...newItem, qty: parseInt(e.target.value)})} 
-                                                        className="w-full bg-slate-800 p-2 rounded text-sm border border-slate-600 outline-none text-white"/>
-                                                </div>
-                                                <Button onClick={addItem} variant="primary" className="h-[38px]"><Plus size={18}/></Button>
+                                    {/* Input Nuovo Oggetto */}
+                                    <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                                        <h3 className="text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider">Aggiungi Oggetto</h3>
+                                        <div className="flex gap-2 items-end">
+                                            <div className="flex-1">
+                                                <label className="text-xs text-slate-500 font-bold">Nome</label>
+                                                <input type="text" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} 
+                                                    placeholder="Es. Chiave Antica" className="w-full bg-slate-800 p-2 rounded text-sm border border-slate-600 outline-none text-white"/>
+                                            </div>
+                                            <div className="w-36">
+                                                <label className="text-xs text-slate-500 font-bold">Tipo</label>
+                                                <select value={newItem.type} onChange={e => setNewItem({...newItem, type: e.target.value})}
+                                                    className="w-full bg-slate-800 p-2 rounded text-sm border border-slate-600 outline-none text-white">
+                                                    {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                                </select>
+                                            </div>
+                                            <div className="w-16">
+                                                <label className="text-xs text-slate-500 font-bold">Q.tà</label>
+                                                <input type="number" value={newItem.qty} onChange={e => setNewItem({...newItem, qty: parseInt(e.target.value)})} 
+                                                    className="w-full bg-slate-800 p-2 rounded text-sm border border-slate-600 outline-none text-white"/>
+                                            </div>
+                                            <Button onClick={addItem} variant="primary" className="h-[38px]"><Plus size={18}/></Button>
+                                        </div>
+                                    </div>
+
+                                    {/* Sezione Arsenale (Armi e Armature) */}
+                                    {combatItems.length > 0 && (
+                                        <div>
+                                            <h3 className="text-lg font-bold text-red-400 mb-3 flex items-center gap-2 border-b border-red-900/30 pb-2">
+                                                <Sword size={20}/> Arsenale
+                                            </h3>
+                                            <div className="space-y-2">
+                                                {combatItems.map(item => (
+                                                    <div key={item.id} className="flex items-center justify-between bg-slate-800 p-3 rounded border border-slate-700 hover:border-red-500/30 transition-colors">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="p-2 rounded-full bg-red-900/20 text-red-400">
+                                                                {item.type === 'Arma' ? <Sword size={16}/> : <Shield size={16}/>}
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-bold text-slate-200">{item.name}</div>
+                                                                <div className="text-xs text-slate-500">{item.type}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="text-sm font-bold text-slate-400">x{item.qty}</div>
+                                                            <button onClick={() => removeItem(item.id)} className="text-slate-600 hover:text-red-400 transition-colors"><Trash2 size={16}/></button>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
+                                    )}
 
+                                    {/* Sezione Zaino (Generici) */}
+                                    <div>
+                                        <h3 className="text-lg font-bold text-amber-500 mb-3 flex items-center gap-2 border-b border-amber-900/30 pb-2">
+                                            <Backpack size={20}/> Zaino
+                                        </h3>
                                         <div className="space-y-2">
-                                            {char.inventory && char.inventory.map(item => (
-                                                <div key={item.id} className="flex items-center justify-between bg-slate-800 p-3 rounded border border-slate-700 group hover:border-slate-500 transition-colors">
+                                            {generalItems.map(item => (
+                                                <div key={item.id} className="flex items-center justify-between bg-slate-800 p-3 rounded border border-slate-700 hover:border-amber-500/30 transition-colors">
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`p-2 rounded-full ${item.type === 'Arma' ? 'bg-red-900/30 text-red-400' : 'bg-slate-700 text-slate-400'}`}>
-                                                            {item.type === 'Arma' ? <Sword size={16}/> : (item.type === 'Armatura' ? <Shield size={16}/> : <Backpack size={16}/>)}
+                                                        <div className="p-2 rounded-full bg-slate-700/50 text-slate-400">
+                                                            {item.type === 'Oggetto Magico' ? <Sparkles size={16} className="text-purple-400"/> : <Backpack size={16}/>}
                                                         </div>
                                                         <div>
                                                             <div className="font-bold text-slate-200">{item.name}</div>
-                                                            <div className="text-xs text-slate-500">{item.type}</div>
+                                                            <div className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border inline-block mt-1 ${getTagStyle(item.type)}`}>
+                                                                {item.type}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-4">
@@ -638,7 +682,7 @@
                                                     </div>
                                                 </div>
                                             ))}
-                                            {(!char.inventory || char.inventory.length === 0) && <div className="text-center text-slate-600 italic py-4">Inventario vuoto</div>}
+                                            {generalItems.length === 0 && <div className="text-slate-600 italic text-sm py-2">Lo zaino è vuoto.</div>}
                                         </div>
                                     </div>
                                 </div>
