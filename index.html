@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grimorio D&D</title>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel per tradurre JSX nel browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons (Versione React UMD) -->
+    <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
+
+    <style>
+        /* Animazioni Custom */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .7; }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- SETUP INIZIALE ---
+        const { useState, useEffect, useRef } = React;
+        
+        // Importiamo le icone dall'oggetto globale lucideReact
+        const { 
+            Sword, Shield, Scroll, Skull, Heart, User, 
+            Save, Trash2, Plus, ChevronLeft, Dices, 
+            Image: ImageIcon, Upload, Wand2, BookOpen,
+            Feather, Axe, Crosshair, Music, Ghost, Hammer
+        } = window.lucideReact;
+
+        // --- COSTANTI E DATI DI GIOCO ---
+
+        const CLASSES = [
+            { name: 'Barbaro', icon: Axe, defaultColor: 'text-red-500' },
+            { name: 'Bardo', icon: Music, defaultColor: 'text-pink-500' },
+            { name: 'Chierico', icon: Crosshair, defaultColor: 'text-gray-300' },
+            { name: 'Druido', icon: Feather, defaultColor: 'text-green-500' },
+            { name: 'Guerriero', icon: Sword, defaultColor: 'text-orange-700' },
+            { name: 'Monaco', icon: User, defaultColor: 'text-blue-300' },
+            { name: 'Paladino', icon: Shield, defaultColor: 'text-yellow-400' },
+            { name: 'Ranger', icon: Crosshair, defaultColor: 'text-emerald-600' },
+            { name: 'Ladro', icon: Ghost, defaultColor: 'text-gray-800' },
+            { name: 'Stregone', icon: Wand2, defaultColor: 'text-red-600' },
+            { name: 'Warlock', icon: Skull, defaultColor: 'text-purple-600' },
+            { name: 'Mago', icon: BookOpen, defaultColor: 'text-blue-600' },
+            { name: 'Artefice', icon: Hammer, defaultColor: 'text-amber-600' },
+        ];
+
+        const RACES = [
+            'Umano', 'Elfo', 'Nano', 'Halfling', 'Dragonide', 'Gnomo', 
+            'Mezzelfo', 'Mezzorco', 'Tiefling', 'Aasimar', 'Genasi', 'Tabaxi', 'Altro'
+        ];
+
+        const ALIGNMENTS = [
+            'Legale Buono', 'Neutrale Buono', 'Caotico Buono',
+            'Legale Neutrale', 'Vero Neutrale', 'Caotico Neutrale',
+            'Legale Malvagio', 'Neutrale Malvagio', 'Caotico Malvagio'
+        ];
+
+        const STATS = ['Forza', 'Destrezza', 'Costituzione', 'Intelligenza', 'Saggezza', 'Carisma'];
+
+        const getModifier = (score) => {
+            const mod = Math.floor(((score || 10) - 10) / 2);
+            return mod >= 0 ? `+${mod}` : mod;
+        };
+
+        // --- COMPONENTI UI ---
+
+        const Button = ({ children, onClick, variant = 'primary', className = '', type = 'button' }) => {
+            const baseStyle = "px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2";
+            const variants = {
+                primary: "bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20",
+                secondary: "bg-slate-700 hover:bg-slate-600 text-slate-200",
+                danger: "bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800",
+                ghost: "bg-transparent hover:bg-slate-800 text-slate-400 hover:text-white"
+            };
+            return (
+                <button type={type} onClick={onClick} className={`${baseStyle} ${variants[variant]} ${className}`}>
+                    {children}
+                </button>
+            );
+        };
+
+        const Input = ({ label, value, onChange, type = "text", placeholder = "", textarea = false }) => (
+            <div className="mb-4">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{label}</label>
+                {textarea ? (
+                    <textarea 
+                        value={value} 
+                        onChange={onChange} 
+                        placeholder={placeholder}
+                        className="w-full bg-slate-950 border border-slate-700 rounded-md p-3 text-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all min-h-[120px]"
+                    />
+                ) : (
+                    <input 
+                        type={type} 
+                        value={value === undefined || value === null || Number.isNaN(value) ? '' : value} 
+                        onChange={onChange} 
+                        placeholder={placeholder}
+                        className="w-full bg-slate-950 border border-slate-700 rounded-md p-2 text-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                    />
+                )}
+            </div>
+        );
+
+        const StatBox = ({ label, value, onChange }) => (
+            <div className="flex flex-col items-center bg-slate-900 border border-slate-700 p-3 rounded-lg relative group hover:border-amber-500/50 transition-colors">
+                <span className="text-xs text-slate-500 uppercase font-bold mb-1">{label.substring(0, 3)}</span>
+                <input 
+                    type="number" 
+                    value={value} 
+                    onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        onChange(isNaN(val) ? 10 : val);
+                    }}
+                    className="w-12 text-center bg-transparent text-xl font-bold text-slate-100 outline-none appearance-none"
+                />
+                <div className="mt-1 w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 border border-slate-600 text-sm font-bold text-amber-500">
+                    {getModifier(value)}
+                </div>
+            </div>
+        );
+
+        // --- COMPONENTI PRINCIPALI ---
+
+        const CharacterCard = ({ character, onEdit, onDelete }) => {
+            const ClassIconObj = CLASSES.find(c => c.name === character.class)?.icon || User;
+            
+            return (
+                <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden hover:shadow-xl hover:shadow-amber-900/10 hover:border-amber-500/30 transition-all duration-300 group">
+                    <div className="h-48 w-full bg-slate-900 relative overflow-hidden">
+                        {character.imageUrl ? (
+                            <img src={character.imageUrl} alt={character.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-slate-900">
+                                <ClassIconObj size={64} className="text-slate-700 group-hover:text-amber-600 transition-colors" />
+                            </div>
+                        )}
+                        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-900 to-transparent p-4 pt-12">
+                            <h3 className="text-xl font-bold text-white truncate">{character.name || "Senza Nome"}</h3>
+                            <p className="text-sm text-amber-400 font-medium">{character.race} {character.class} (Lv. {character.level})</p>
+                        </div>
+                    </div>
+
+                    <div className="p-4 grid grid-cols-3 gap-2 border-b border-slate-700/50">
+                        <div className="text-center">
+                            <div className="text-xs text-slate-500">HP</div>
+                            <div className="text-slate-200 font-bold">{character.hpMax}</div>
+                        </div>
+                        <div className="text-center border-l border-slate-700">
+                            <div className="text-xs text-slate-500">CA</div>
+                            <div className="text-slate-200 font-bold">{character.ac}</div>
+                        </div>
+                        <div className="text-center border-l border-slate-700">
+                            <div className="text-xs text-slate-500">Iniz</div>
+                            <div className="text-slate-200 font-bold">{getModifier(character.stats.Destrezza)}</div>
+                        </div>
+                    </div>
+
+                    <div className="p-3 flex justify-between bg-slate-800">
+                        <Button variant="ghost" onClick={() => onDelete(character.id)} className="text-xs text-red-400 hover:text-red-300">
+                            <Trash2 size={16} /> Elimina
+                        </Button>
+                        <Button variant="secondary" onClick={() => onEdit(character)} className="text-xs">
+                            Apri Scheda
+                        </Button>
+                    </div>
+                </div>
+            );
+        };
+
+        const DiceRoller = () => {
+            const [result, setResult] = useState(null);
+            const [rolling, setRolling] = useState(false);
+
+            const roll = (sides) => {
+                setRolling(true);
+                setResult(null);
+                setTimeout(() => {
+                    setResult(Math.floor(Math.random() * sides) + 1);
+                    setRolling(false);
+                }, 500);
+            };
+
+            return (
+                <div className="fixed bottom-6 right-6 z-50">
+                    <div className="bg-slate-800 border border-slate-600 p-4 rounded-xl shadow-2xl flex flex-col gap-2 items-center">
+                        <div className="text-xs text-slate-400 font-bold uppercase mb-1">Quick Roll</div>
+                        <div className="flex gap-2">
+                            <button onClick={() => roll(20)} className="w-10 h-10 bg-amber-600 hover:bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold shadow-lg transition-transform active:scale-95">d20</button>
+                            <button onClick={() => roll(6)} className="w-10 h-10 bg-slate-700 hover:bg-slate-600 rounded-lg flex items-center justify-center text-white font-bold transition-transform active:scale-95">d6</button>
+                        </div>
+                        {result !== null && (
+                            <div className="mt-2 text-2xl font-bold text-amber-400 animate-bounce">
+                                {result}
+                            </div>
+                        )}
+                        {rolling && <div className="mt-2 text-sm text-slate-400">Rotolando...</div>}
+                    </div>
+                </div>
+            );
+        };
+
+        const CharacterEditor = ({ initialData, onSave, onCancel }) => {
+            const [char, setChar] = useState(initialData || {
+                id: Date.now(),
+                name: '',
+                race: 'Umano',
+                class: 'Guerriero',
+                level: 1,
+                xp: 0,
+                alignment: 'Vero Neutrale',
+                imageUrl: '',
+                hpMax: 10,
+                ac: 10,
+                stats: { Forza: 10, Destrezza: 10, Costituzione: 10, Intelligenza: 10, Saggezza: 10, Carisma: 10 },
+                backstory: '',
+                personality: '',
+                notes: ''
+            });
+            const [activeTab, setActiveTab] = useState('core');
+            const fileInputRef = useRef(null);
+
+            const handleStatChange = (stat, value) => {
+                setChar(prev => ({
+                    ...prev,
+                    stats: { ...prev.stats, [stat]: value }
+                }));
+            };
+
+            const handleImageUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setChar(prev => ({ ...prev, imageUrl: reader.result }));
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const handleNumberChange = (field, value) => {
+                const intVal = parseInt(value);
+                setChar(prev => ({
+                    ...prev,
+                    [field]: isNaN(intVal) ? 0 : intVal
+                }));
+            };
+
+            return (
+                <div className="animate-fade-in w-full max-w-4xl mx-auto pb-24">
+                    <div className="flex items-center justify-between mb-6 sticky top-0 bg-slate-900/95 backdrop-blur z-20 py-4 border-b border-slate-800">
+                        <div className="flex items-center gap-4">
+                            <Button variant="ghost" onClick={onCancel}><ChevronLeft size={20} /> Indietro</Button>
+                            <h2 className="text-2xl font-bold text-slate-100 hidden md:block">
+                                {initialData ? 'Modifica Personaggio' : 'Nuovo Personaggio'}
+                            </h2>
+                        </div>
+                        <Button onClick={() => onSave(char)} variant="primary"><Save size={18} /> Salva Personaggio</Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        <div className="md:col-span-4 flex flex-col gap-6">
+                            <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                                <div className="aspect-square bg-slate-900 rounded-lg overflow-hidden relative mb-4 border-2 border-dashed border-slate-700 hover:border-amber-500/50 transition-colors group">
+                                    {char.imageUrl ? (
+                                        <img src={char.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
+                                            <ImageIcon size={48} className="mb-2"/>
+                                            <span className="text-xs">Nessuna Immagine</span>
+                                        </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-opacity">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Incolla URL Immagine..."
+                                            className="w-3/4 bg-slate-800 text-xs p-2 rounded border border-slate-600 text-white"
+                                            onChange={(e) => setChar({...char, imageUrl: e.target.value})}
+                                        />
+                                        <span className="text-xs text-slate-400">oppure</span>
+                                        <Button variant="secondary" className="text-xs py-1" onClick={() => fileInputRef.current.click()}>
+                                            <Upload size={14} /> Carica File
+                                        </Button>
+                                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                    </div>
+                                </div>
+                                <div className="text-center">
+                                    <h3 className="text-xl font-bold text-white">{char.name || "..."}</h3>
+                                    <p className="text-amber-500">{char.race} {char.class} Lv.{char.level}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex md:flex-col gap-2 bg-slate-800 p-2 rounded-xl">
+                                {[
+                                    { id: 'core', label: 'Dati Essenziali', icon: User },
+                                    { id: 'stats', label: 'Statistiche & Combattimento', icon: Shield },
+                                    { id: 'story', label: 'Narrativa & Backstory', icon: Scroll }
+                                ].map(tab => {
+                                    const Icon = tab.icon;
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all flex-1 md:flex-none text-left
+                                                ${activeTab === tab.id 
+                                                    ? 'bg-amber-600/20 text-amber-400 border border-amber-600/30' 
+                                                    : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}
+                                        >
+                                            <Icon size={18} />
+                                            <span className="hidden md:inline">{tab.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="md:col-span-8 bg-slate-800 p-6 rounded-xl border border-slate-700 min-h-[500px]">
+                            {activeTab === 'core' && (
+                                <div className="space-y-6 animate-fade-in">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <Input label="Nome Personaggio" value={char.name} onChange={e => setChar({...char, name: e.target.value})} placeholder="Es. Grog Strongjaw" />
+                                        <div className="mb-4">
+                                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Classe</label>
+                                            <select 
+                                                value={char.class} 
+                                                onChange={e => setChar({...char, class: e.target.value})}
+                                                className="w-full bg-slate-950 border border-slate-700 rounded-md p-2 text-slate-200 focus:border-amber-500 outline-none"
+                                            >
+                                                {CLASSES.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Razza</label>
+                                            <select 
+                                                value={char.race} 
+                                                onChange={e => setChar({...char, race: e.target.value})}
+                                                className="w-full bg-slate-950 border border-slate-700 rounded-md p-2 text-slate-200 focus:border-amber-500 outline-none"
+                                            >
+                                                {RACES.map(r => <option key={r} value={r}>{r}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Allineamento</label>
+                                            <select 
+                                                value={char.alignment} 
+                                                onChange={e => setChar({...char, alignment: e.target.value})}
+                                                className="w-full bg-slate-950 border border-slate-700 rounded-md p-2 text-slate-200 focus:border-amber-500 outline-none"
+                                            >
+                                                {ALIGNMENTS.map(a => <option key={a} value={a}>{a}</option>)}
+                                            </select>
+                                        </div>
+                                        <Input label="Livello" type="number" value={char.level} onChange={e => handleNumberChange('level', e.target.value)} />
+                                        <Input label="Esperienza (XP)" value={char.xp || 0} onChange={e => setChar({...char, xp: e.target.value})} />
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'stats' && (
+                                <div className="space-y-8 animate-fade-in">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-amber-500 mb-4 flex items-center gap-2"><Dices size={20}/> Caratteristiche</h3>
+                                        <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                                            {STATS.map(stat => (
+                                                <StatBox 
+                                                    key={stat} 
+                                                    label={stat} 
+                                                    value={char.stats[stat]} 
+                                                    onChange={(val) => handleStatChange(stat, val)} 
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="h-px bg-slate-700 w-full" />
+
+                                    <div>
+                                        <h3 className="text-lg font-bold text-red-400 mb-4 flex items-center gap-2"><Sword size={20}/> Statistiche Combattimento</h3>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            <div className="p-3 bg-slate-900 rounded border border-slate-700">
+                                                <label className="text-xs text-slate-500 font-bold block mb-1">Punti Ferita (Max)</label>
+                                                <input type="number" className="bg-transparent text-xl font-bold text-green-400 w-full outline-none" 
+                                                    value={char.hpMax} onChange={e => handleNumberChange('hpMax', e.target.value)} />
+                                            </div>
+                                            <div className="p-3 bg-slate-900 rounded border border-slate-700">
+                                                <label className="text-xs text-slate-500 font-bold block mb-1">Classe Armatura</label>
+                                                <input type="number" className="bg-transparent text-xl font-bold text-slate-200 w-full outline-none" 
+                                                    value={char.ac} onChange={e => handleNumberChange('ac', e.target.value)} />
+                                            </div>
+                                            <div className="p-3 bg-slate-900 rounded border border-slate-700 opacity-70">
+                                                <label className="text-xs text-slate-500 font-bold block mb-1">Bonus Competenza</label>
+                                                <div className="text-xl font-bold text-slate-300">+{Math.ceil(1 + ((char.level || 1) / 4))}</div>
+                                            </div>
+                                            <div className="p-3 bg-slate-900 rounded border border-slate-700 opacity-70">
+                                                <label className="text-xs text-slate-500 font-bold block mb-1">Iniziativa</label>
+                                                <div className="text-xl font-bold text-slate-300">{getModifier(char.stats.Destrezza)}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'story' && (
+                                <div className="space-y-6 animate-fade-in">
+                                    <Input textarea label="Backstory" placeholder="Da dove viene il tuo personaggio? Qual è il suo passato traumatico o glorioso?"
+                                        value={char.backstory} onChange={e => setChar({...char, backstory: e.target.value})} />
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <Input textarea label="Tratti della Personalità & Ideali" placeholder="Come si comporta? Cosa guida le sue azioni?"
+                                            value={char.personality} onChange={e => setChar({...char, personality: e.target.value})} />
+                                        <Input textarea label="Legami & Difetti" placeholder="A chi tiene? Qual è la sua debolezza?"
+                                            value={char.notes} onChange={e => setChar({...char, notes: e.target.value})} />
+                                    </div>
+                                    
+                                    <div className="bg-amber-900/10 p-4 rounded-lg border border-amber-900/30">
+                                        <p className="text-xs text-amber-600/80 italic">
+                                            Suggerimento: Per un profilo psicologico più profondo, considera di definire una paura irrazionale e un obiettivo segreto che nemmeno il party conosce.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [view, setView] = useState('list');
+            const [characters, setCharacters] = useState([]);
+            const [editingId, setEditingId] = useState(null);
+
+            useEffect(() => {
+                const saved = localStorage.getItem('dnd-characters');
+                if (saved) {
+                    try {
+                        setCharacters(JSON.parse(saved));
+                    } catch (e) {
+                        console.error("Errore nel caricamento dati", e);
+                    }
+                }
+            }, []);
+
+            useEffect(() => {
+                localStorage.setItem('dnd-characters', JSON.stringify(characters));
+            }, [characters]);
+
+            const handleSave = (char) => {
+                if (characters.find(c => c.id === char.id)) {
+                    setCharacters(characters.map(c => c.id === char.id ? char : c));
+                } else {
+                    setCharacters([...characters, char]);
+                }
+                setView('list');
+                setEditingId(null);
+            };
+
+            const handleDelete = (id) => {
+                if (window.confirm("Sei sicuro di voler eliminare questo eroe? L'azione è irreversibile.")) {
+                    setCharacters(characters.filter(c => c.id !== id));
+                }
+            };
+
+            const startEdit = (char) => {
+                setEditingId(char ? char.id : null);
+                setView('edit');
+            };
+
+            return (
+                <div className="min-h-screen font-sans selection:bg-amber-500/30">
+                    <nav className="border-b border-slate-800 bg-slate-900 px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-lg">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-amber-600 p-2 rounded-lg text-slate-900">
+                                <Sword size={24} />
+                            </div>
+                            <h1 className="text-xl font-bold tracking-tight text-slate-100">GRIMORIO <span className="text-amber-500">D&D</span></h1>
+                        </div>
+                        <div className="flex gap-4">
+                            {view === 'list' && (
+                                <Button onClick={() => startEdit(null)} className="animate-pulse-slow">
+                                    <Plus size={20} /> Crea Eroe
+                                </Button>
+                            )}
+                        </div>
+                    </nav>
+
+                    <main className="container mx-auto p-6">
+                        {view === 'list' && (
+                            <div className="space-y-8 animate-fade-in">
+                                {characters.length === 0 ? (
+                                    <div className="text-center py-20 flex flex-col items-center">
+                                        <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-6 text-slate-600">
+                                            <Ghost size={48} />
+                                        </div>
+                                        <h2 className="text-2xl font-bold text-slate-300 mb-2">La Taverna è vuota</h2>
+                                        <p className="text-slate-500 max-w-md mb-8">Non hai ancora creato nessun personaggio. Inizia subito a forgiare il destino del tuo prossimo eroe.</p>
+                                        <Button onClick={() => startEdit(null)} variant="primary" className="text-lg px-8 py-3">
+                                            Inizia Creazione
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="flex items-center justify-between">
+                                            <h2 className="text-slate-400 font-medium uppercase tracking-widest text-sm">I tuoi Personaggi ({characters.length})</h2>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                            {characters.map(char => (
+                                                <CharacterCard 
+                                                    key={char.id} 
+                                                    character={char} 
+                                                    onEdit={startEdit} 
+                                                    onDelete={handleDelete} 
+                                                />
+                                            ))}
+                                            
+                                            <button 
+                                                onClick={() => startEdit(null)}
+                                                className="flex flex-col items-center justify-center min-h-[300px] bg-slate-900/50 border-2 border-dashed border-slate-800 rounded-xl hover:border-amber-500/50 hover:bg-slate-900 transition-all group"
+                                            >
+                                                <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-600 group-hover:text-amber-500 group-hover:scale-110 transition-all">
+                                                    <Plus size={32} />
+                                                </div>
+                                                <span className="mt-4 font-medium text-slate-500 group-hover:text-amber-500">Aggiungi Nuovo</span>
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
+                        {view === 'edit' && (
+                            <CharacterEditor 
+                                initialData={editingId ? characters.find(c => c.id === editingId) : null}
+                                onSave={handleSave}
+                                onCancel={() => setView('list')}
+                            />
+                        )}
+                    </main>
+                    <DiceRoller />
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
