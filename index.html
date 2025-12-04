@@ -139,7 +139,11 @@
             Backpack: (props) => <IconBase {...props}><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M8 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"/><path d="M8 10h8"/><path d="M9 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"/></IconBase>,
             Sparkles: (props) => <IconBase {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></IconBase>,
             Edit: (props) => <IconBase {...props}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></IconBase>,
-            Check: (props) => <IconBase {...props}><polyline points="20 6 9 17 4 12"/></IconBase>
+            Check: (props) => <IconBase {...props}><polyline points="20 6 9 17 4 12"/></IconBase>,
+            Filter: (props) => <IconBase {...props}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></IconBase>,
+            ArrowDownAZ: (props) => <IconBase {...props}><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M20 8h-5"/><path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10"/><path d="M15 14h5l-5 7h5"/></IconBase>,
+            Zap: (props) => <IconBase {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></IconBase>,
+            Flame: (props) => <IconBase {...props}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.6-3.3.3.9.8 1.6 1.9 2.8z"/></IconBase>
         };
 
         const { 
@@ -147,7 +151,7 @@
             Save, Trash2, Plus, Minus, ChevronLeft, Dices, 
             Image: ImageIcon, Upload, Download, Wand2, BookOpen,
             Feather, Axe, Crosshair, Music, Ghost, Hammer,
-            Backpack, Sparkles, Edit, Check
+            Backpack, Sparkles, Edit, Check, Filter, ArrowDownAZ, Zap, Flame
         } = Icons;
 
         // --- SETUP INIZIALE ---
@@ -335,6 +339,52 @@
             );
         };
 
+        const SpellItem = ({ spell, onDelete, onUpdate }) => {
+            const [isEditing, setIsEditing] = useState(false);
+            const [editData, setEditData] = useState({ name: spell.name, level: spell.level });
+
+            const handleSave = () => {
+                onUpdate(spell.id, editData);
+                setIsEditing(false);
+            };
+
+            return (
+                <div className="bg-slate-800 p-3 rounded border border-slate-700 flex justify-between items-center group">
+                    {isEditing ? (
+                        <div className="flex gap-2 items-center flex-1">
+                            <input 
+                                type="text" 
+                                value={editData.name} 
+                                onChange={(e) => setEditData({...editData, name: e.target.value})}
+                                className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white outline-none focus:border-purple-500 flex-1"
+                            />
+                            <select 
+                                value={editData.level} 
+                                onChange={(e) => setEditData({...editData, level: parseInt(e.target.value)})}
+                                className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-slate-300 outline-none w-20"
+                            >
+                                <option value={0}>Cantrip</option>
+                                {[1,2,3,4,5,6,7,8,9].map(l => <option key={l} value={l}>Lv {l}</option>)}
+                            </select>
+                            <button onClick={handleSave} className="text-green-400 hover:text-green-300"><Check size={16}/></button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <Sparkles size={14} className={spell.level === 0 ? "text-slate-400" : "text-purple-500"}/>
+                            <span className="text-slate-200 font-medium">{spell.name}</span>
+                        </div>
+                    )}
+                    
+                    {!isEditing && (
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <button onClick={() => setIsEditing(true)} className="text-slate-500 hover:text-amber-500"><Edit size={14}/></button>
+                            <button onClick={() => onDelete(spell.id)} className="text-slate-600 hover:text-red-400"><Trash2 size={14}/></button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
         const CharacterCard = ({ character, onEdit, onDelete }) => {
             const ClassIconObj = CLASSES.find(c => c.name === character.class)?.icon || User;
             
@@ -429,15 +479,25 @@
                 backstory: '',
                 personality: '',
                 notes: '',
+                resistances: '',
                 money: { cp: 0, sp: 0, gp: 0 },
                 inventory: [],
-                spells: []
+                spells: [],
+                spellSlots: {}, // { 1: {current:0, max:0}, ... }
+                resources: { sorcery: {current: 0, max: 0}, magic: {current: 0, max: 0} }
             });
+
+            // Stati per filtri inventario
+            const [invFilter, setInvFilter] = useState('Tutti');
+            const [invSort, setInvSort] = useState('Nome');
 
             useEffect(() => {
                 if (!char.money) setChar(c => ({...c, money: { cp: 0, sp: 0, gp: 0 }}));
                 if (!char.inventory) setChar(c => ({...c, inventory: []}));
                 if (!char.spells) setChar(c => ({...c, spells: []}));
+                if (!char.spellSlots) setChar(c => ({...c, spellSlots: {} }));
+                if (!char.resources) setChar(c => ({...c, resources: { sorcery: {current: 0, max: 0}, magic: {current: 0, max: 0} } }));
+                if (!char.resistances) setChar(c => ({...c, resistances: '' }));
             }, []);
 
             const [activeTab, setActiveTab] = useState('core');
@@ -458,7 +518,6 @@
                 const file = e.target.files[0];
                 if (!file) return;
 
-                // Controllo dimensione iniziale
                 if (file.size > 5 * 1024 * 1024) {
                     alert("Il file è troppo grande. Scegli un'immagine sotto i 5MB.");
                     return;
@@ -490,7 +549,6 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // Compressione JPEG 0.7
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
                         setChar(prev => ({ ...prev, imageUrl: dataUrl }));
                     }
@@ -546,8 +604,60 @@
                 }));
             };
 
-            const combatItems = char.inventory ? char.inventory.filter(i => ['Arma', 'Armatura'].includes(i.type)) : [];
-            const generalItems = char.inventory ? char.inventory.filter(i => !['Arma', 'Armatura'].includes(i.type)) : [];
+            const updateSpell = (id, updates) => {
+                setChar(prev => ({
+                    ...prev,
+                    spells: prev.spells.map(s => s.id === id ? { ...s, ...updates } : s)
+                }));
+            };
+
+            // LOGICA FILTRO E ORDINAMENTO
+            const getFilteredInventory = () => {
+                let items = char.inventory || [];
+                // Filtro
+                if (invFilter !== 'Tutti') {
+                    if (invFilter === 'Arsenale') {
+                        items = items.filter(i => ['Arma', 'Armatura'].includes(i.type));
+                    } else if (invFilter === 'Zaino') {
+                        items = items.filter(i => !['Arma', 'Armatura'].includes(i.type));
+                    } else {
+                        items = items.filter(i => i.type === invFilter);
+                    }
+                }
+                // Ordinamento
+                return items.sort((a, b) => {
+                    if (invSort === 'Nome') return a.name.localeCompare(b.name);
+                    if (invSort === 'Tipo') return a.type.localeCompare(b.type);
+                    if (invSort === 'Quantità') return b.qty - a.qty;
+                    return 0;
+                });
+            };
+
+            const filteredItems = getFilteredInventory();
+
+            // Gestione Slot
+            const handleSlotChange = (level, type, val) => {
+                const safeVal = Math.max(0, parseInt(val) || 0);
+                setChar(prev => ({
+                    ...prev,
+                    spellSlots: {
+                        ...prev.spellSlots,
+                        [level]: { ...(prev.spellSlots[level] || {}), [type]: safeVal }
+                    }
+                }));
+            };
+
+            // Gestione Risorse
+            const handleResourceChange = (res, type, val) => {
+                const safeVal = Math.max(0, parseInt(val) || 0);
+                setChar(prev => ({
+                    ...prev,
+                    resources: {
+                        ...prev.resources,
+                        [res]: { ...(prev.resources[res] || {}), [type]: safeVal }
+                    }
+                }));
+            };
             
             return (
                 <div className="animate-fade-in w-full max-w-4xl mx-auto pb-24">
@@ -680,7 +790,7 @@
 
                                     <div>
                                         <h3 className="text-lg font-bold text-red-400 mb-4 flex items-center gap-2"><Sword size={20}/> Statistiche Combattimento</h3>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                                             <div className="p-3 bg-slate-900 rounded border border-slate-700">
                                                 <label className="text-xs text-slate-500 font-bold block mb-1">Punti Ferita (Max)</label>
                                                 <input type="number" className="bg-transparent text-xl font-bold text-green-400 w-full outline-none" 
@@ -700,6 +810,15 @@
                                                 <div className="text-xl font-bold text-slate-300">{getModifier(char.stats.Destrezza)}</div>
                                             </div>
                                         </div>
+                                        
+                                        <Input 
+                                            textarea 
+                                            label="Resistenze, Immunità & Vulnerabilità" 
+                                            placeholder="Es. Resistenza al danno Necrotico (Aasimar), Immunità al Veleno..."
+                                            value={char.resistances} 
+                                            onChange={e => setChar({...char, resistances: e.target.value})}
+                                            className="bg-slate-900/50"
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -753,47 +872,109 @@
                                         </div>
                                     </div>
 
-                                    {/* Sezione Arsenale (Armi e Armature) */}
-                                    {combatItems.length > 0 && (
-                                        <div>
-                                            <h3 className="text-lg font-bold text-red-400 mb-3 flex items-center gap-2 border-b border-red-900/30 pb-2">
-                                                <Sword size={20}/> Arsenale
-                                            </h3>
-                                            <div className="space-y-2">
-                                                {combatItems.map(item => (
-                                                    <InventoryItem 
-                                                        key={item.id} 
-                                                        item={item} 
-                                                        onDelete={removeItem} 
-                                                        onUpdate={updateItem}
-                                                    />
-                                                ))}
-                                            </div>
+                                    {/* Controlli Filtro & Ordinamento */}
+                                    <div className="flex flex-wrap gap-2 items-center justify-between pb-2 border-b border-slate-800">
+                                        <div className="flex gap-2 items-center">
+                                            <Filter size={16} className="text-slate-500"/>
+                                            <select 
+                                                value={invFilter} 
+                                                onChange={e => setInvFilter(e.target.value)}
+                                                className="bg-slate-900 border border-slate-700 rounded text-xs p-1 text-slate-300 outline-none"
+                                            >
+                                                <option value="Tutti">Tutti</option>
+                                                <option value="Arsenale">Arsenale (Armi/Armature)</option>
+                                                <option value="Zaino">Zaino (Altro)</option>
+                                                {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                            </select>
                                         </div>
-                                    )}
+                                        <div className="flex gap-2 items-center">
+                                            <ArrowDownAZ size={16} className="text-slate-500"/>
+                                            <select 
+                                                value={invSort} 
+                                                onChange={e => setInvSort(e.target.value)}
+                                                className="bg-slate-900 border border-slate-700 rounded text-xs p-1 text-slate-300 outline-none"
+                                            >
+                                                <option value="Nome">Nome (A-Z)</option>
+                                                <option value="Tipo">Tipo</option>
+                                                <option value="Quantità">Quantità</option>
+                                            </select>
+                                        </div>
+                                    </div>
 
-                                    {/* Sezione Zaino (Generici) */}
-                                    <div>
-                                        <h3 className="text-lg font-bold text-amber-500 mb-3 flex items-center gap-2 border-b border-amber-900/30 pb-2">
-                                            <Backpack size={20}/> Zaino
-                                        </h3>
-                                        <div className="space-y-2">
-                                            {generalItems.map(item => (
-                                                <InventoryItem 
-                                                    key={item.id} 
-                                                    item={item} 
-                                                    onDelete={removeItem} 
-                                                    onUpdate={updateItem}
-                                                />
-                                            ))}
-                                            {generalItems.length === 0 && <div className="text-slate-600 italic text-sm py-2">Lo zaino è vuoto.</div>}
-                                        </div>
+                                    {/* Lista Oggetti Filtrata */}
+                                    <div className="space-y-2">
+                                        {filteredItems.map(item => (
+                                            <InventoryItem 
+                                                key={item.id} 
+                                                item={item} 
+                                                onDelete={removeItem} 
+                                                onUpdate={updateItem}
+                                            />
+                                        ))}
+                                        {filteredItems.length === 0 && <div className="text-slate-600 italic text-sm py-4 text-center">Nessun oggetto trovato.</div>}
                                     </div>
                                 </div>
                             )}
 
                             {activeTab === 'magic' && (
                                 <div className="space-y-8 animate-fade-in">
+                                    
+                                    {/* Risorse Magiche */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="bg-slate-900 p-3 rounded border border-slate-700 flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-rose-400 font-bold">
+                                                <Flame size={18}/> Punti Stregoneria
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <input type="number" className="w-10 bg-slate-800 text-center rounded border border-slate-600 text-white font-bold" 
+                                                    value={char.resources?.sorcery?.current || 0} onChange={e => handleResourceChange('sorcery', 'current', e.target.value)} />
+                                                <span className="text-slate-500">/</span>
+                                                <input type="number" className="w-10 bg-slate-800 text-center rounded border border-slate-600 text-slate-400" 
+                                                    value={char.resources?.sorcery?.max || 0} onChange={e => handleResourceChange('sorcery', 'max', e.target.value)} />
+                                            </div>
+                                        </div>
+                                        <div className="bg-slate-900 p-3 rounded border border-slate-700 flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-blue-400 font-bold">
+                                                <Zap size={18}/> Punti Magia
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <input type="number" className="w-10 bg-slate-800 text-center rounded border border-slate-600 text-white font-bold" 
+                                                    value={char.resources?.magic?.current || 0} onChange={e => handleResourceChange('magic', 'current', e.target.value)} />
+                                                <span className="text-slate-500">/</span>
+                                                <input type="number" className="w-10 bg-slate-800 text-center rounded border border-slate-600 text-slate-400" 
+                                                    value={char.resources?.magic?.max || 0} onChange={e => handleResourceChange('magic', 'max', e.target.value)} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Slot Incantesimo */}
+                                    <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                                        <h3 className="text-sm font-bold text-purple-400 mb-3 uppercase tracking-wider">Slot Incantesimo</h3>
+                                        <div className="grid grid-cols-3 md:grid-cols-9 gap-2">
+                                            {[1,2,3,4,5,6,7,8,9].map(lvl => (
+                                                <div key={lvl} className="flex flex-col items-center bg-slate-800 p-2 rounded border border-slate-700">
+                                                    <span className="text-[10px] text-slate-500 font-bold uppercase mb-1">{lvl}°</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <input 
+                                                            type="text" 
+                                                            className="w-full text-center bg-transparent font-bold text-white outline-none"
+                                                            value={char.spellSlots?.[lvl]?.current || 0}
+                                                            onChange={(e) => handleSlotChange(lvl, 'current', e.target.value)}
+                                                        />
+                                                        <span className="text-slate-600">/</span>
+                                                        <input 
+                                                            type="text" 
+                                                            className="w-full text-center bg-transparent text-slate-400 outline-none"
+                                                            value={char.spellSlots?.[lvl]?.max || 0}
+                                                            onChange={(e) => handleSlotChange(lvl, 'max', e.target.value)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Aggiungi Incantesimo */}
                                     <div className="bg-slate-900 p-4 rounded-lg border border-slate-700 mb-6">
                                         <h3 className="text-sm font-bold text-purple-400 mb-3 uppercase tracking-wider">Aggiungi Incantesimo</h3>
                                         <div className="flex gap-2 items-end">
@@ -819,10 +1000,12 @@
                                         <h4 className="text-slate-400 font-bold uppercase tracking-wider text-xs mb-2 border-b border-slate-700 pb-1">Trucchetti (Cantrips)</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                             {char.spells && char.spells.filter(s => s.level === 0).map(spell => (
-                                                <div key={spell.id} className="bg-slate-800 p-3 rounded border border-slate-700 flex justify-between items-center group">
-                                                    <span className="text-slate-200 font-medium">{spell.name}</span>
-                                                    <button onClick={() => removeSpell(spell.id)} className="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={14}/></button>
-                                                </div>
+                                                <SpellItem 
+                                                    key={spell.id} 
+                                                    spell={spell} 
+                                                    onDelete={removeSpell}
+                                                    onUpdate={updateSpell}
+                                                />
                                             ))}
                                             {(!char.spells || char.spells.filter(s => s.level === 0).length === 0) && <div className="text-slate-600 italic text-sm">Nessun trucchetto conosciuto.</div>}
                                         </div>
@@ -837,13 +1020,12 @@
                                                 <h4 className="text-purple-400 font-bold uppercase tracking-wider text-xs mb-2 border-b border-slate-700 pb-1 mt-4">Livello {lvl}</h4>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                     {spellsOfLevel.map(spell => (
-                                                        <div key={spell.id} className="bg-slate-800 p-3 rounded border border-slate-700 flex justify-between items-center group">
-                                                            <div className="flex items-center gap-2">
-                                                                <Sparkles size={14} className="text-purple-500"/>
-                                                                <span className="text-slate-200 font-medium">{spell.name}</span>
-                                                            </div>
-                                                            <button onClick={() => removeSpell(spell.id)} className="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={14}/></button>
-                                                        </div>
+                                                        <SpellItem 
+                                                            key={spell.id} 
+                                                            spell={spell} 
+                                                            onDelete={removeSpell}
+                                                            onUpdate={updateSpell}
+                                                        />
                                                     ))}
                                                 </div>
                                             </div>
