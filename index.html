@@ -6,7 +6,7 @@
     <title>Grimorio D&D</title>
     
     <!-- FAVICON: Aggiungi il tuo file 'icon.png' nella stessa cartella -->
-    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="icon" type="image/png" href="DnD.png">
     
     <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
@@ -76,7 +76,7 @@
                             </pre>
                             <button 
                                 onClick={() => {
-                                    localStorage.clear(); // Extrema ratio se i dati sono corrotti
+                                    localStorage.clear(); 
                                     window.location.reload();
                                 }}
                                 className="mt-8 px-6 py-2 bg-red-800 text-white rounded hover:bg-red-700 transition"
@@ -148,8 +148,9 @@
             Zap: (props) => <IconBase {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></IconBase>,
             Flame: (props) => <IconBase {...props}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.6-3.3.3.9.8 1.6 1.9 2.8z"/></IconBase>,
             Settings: (props) => <IconBase {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>,
-            CloudUpload: (props) => <IconBase {...props}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></IconBase>,
-            CloudDownload: (props) => <IconBase {...props}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4 4 4-4"/></IconBase>
+            Cloud: (props) => <IconBase {...props}><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M17.5 19h2c1.4 0 2.5-1.1 2.5-2.5S20.9 14 19.5 14c-.1 0-.3 0-.4.1"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>,
+            CloudCheck: (props) => <IconBase {...props}><path d="M12 21a6 6 0 0 0 6-6c0-3.3-2.7-6-6-6-.4 0-.8 0-1.2.1"/><path d="M16 16l2 2 4-4"/><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>,
+            CloudOff: (props) => <IconBase {...props}><path d="M2 2l20 20"/><path d="M5.8 5.8a6 6 0 0 1 8.8 0"/><path d="M12 21a6 6 0 0 0 6-6c0-3.3-2.7-6-6-6-.4 0-.8 0-1.2.1"/><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>
         };
 
         const { 
@@ -158,11 +159,11 @@
             Image: ImageIcon, Upload, Download, Wand2, BookOpen,
             Feather, Axe, Crosshair, Music, Ghost, Hammer,
             Backpack, Sparkles, Edit, Check, Filter, ArrowDownAZ, Zap, Flame,
-            Settings, CloudUpload, CloudDownload
+            Settings, Cloud, CloudCheck, CloudOff
         } = Icons;
 
         // --- SETUP INIZIALE ---
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useRef, useCallback } = React;
 
         // --- COSTANTI E DATI DI GIOCO ---
         const CLASSES = [
@@ -310,7 +311,6 @@
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {/* Tally Counter */}
                         <div className="flex items-center bg-slate-900 rounded border border-slate-600 mr-2">
                             <button 
                                 onClick={() => onUpdate(item.id, { qty: Math.max(0, item.qty - 1) })}
@@ -327,7 +327,6 @@
                             </button>
                         </div>
 
-                        {/* Edit / Save Actions */}
                         {isEditing ? (
                              <button onClick={handleSave} className="p-2 rounded hover:bg-green-900/50 text-green-400 transition-colors">
                                 <Check size={16}/>
@@ -485,16 +484,28 @@
 
             const handleSaveSettings = () => {
                 try {
-                    // Validiamo che sia un JSON valido
-                    if (configJson.trim()) {
-                        JSON.parse(configJson);
+                    let clean = configJson.trim();
+                    // Pulizia "aggressiva" del JSON incollato
+                    // Rimuove 'const firebaseConfig = ' o simili e il punto e virgola finale
+                    clean = clean.replace(/^(const|var|let)\s+\w+\s*=\s*/, '').replace(/;$/, '');
+                    
+                    // Cerca la prima { e l'ultima } per estrarre solo l'oggetto
+                    const firstBrace = clean.indexOf('{');
+                    const lastBrace = clean.lastIndexOf('}');
+                    if (firstBrace !== -1 && lastBrace !== -1) {
+                        clean = clean.substring(firstBrace, lastBrace + 1);
                     }
-                    localStorage.setItem('dnd-firebase-config', configJson);
+
+                    // Prova a parsare
+                    JSON.parse(clean);
+                    
+                    // Se ok, salva
+                    localStorage.setItem('dnd-firebase-config', clean);
                     localStorage.setItem('dnd-sync-id', syncId);
                     onSave();
                     onClose();
                 } catch (e) {
-                    alert("Il JSON di configurazione non è valido.");
+                    alert("Il JSON di configurazione non sembra valido. Assicurati di copiare solo l'oggetto tra parentesi graffe { ... }");
                 }
             };
 
@@ -507,7 +518,7 @@
                         
                         <div className="mb-4">
                             <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
-                                ID Sincronizzazione (Nome univoco per i tuoi dati)
+                                ID Sincronizzazione
                             </label>
                             <input 
                                 type="text" 
@@ -516,7 +527,7 @@
                                 placeholder="es. mario-rossi-dnd-2024"
                                 className="w-full bg-slate-800 border border-slate-600 rounded p-2 text-white outline-none focus:border-amber-500"
                             />
-                            <p className="text-xs text-slate-500 mt-1">Usa questo ID su tutti i tuoi dispositivi per accedere agli stessi dati.</p>
+                            <p className="text-xs text-slate-500 mt-1">Identificativo univoco per i tuoi dati. Usalo uguale su tutti i dispositivi.</p>
                         </div>
 
                         <div className="mb-6">
@@ -526,15 +537,15 @@
                             <textarea 
                                 value={configJson}
                                 onChange={(e) => setConfigJson(e.target.value)}
-                                placeholder='{"apiKey": "...", "authDomain": "...", ...}'
+                                placeholder='Incolla qui il codice da Firebase...'
                                 className="w-full bg-slate-800 border border-slate-600 rounded p-2 text-xs text-slate-300 h-32 font-mono outline-none focus:border-amber-500"
                             />
-                            <p className="text-xs text-slate-500 mt-1">Incolla qui l'oggetto di configurazione fornito dalla console Firebase.</p>
+                            <p className="text-xs text-slate-500 mt-1">Copia l'oggetto <code>config</code> dalla console Firebase.</p>
                         </div>
 
                         <div className="flex justify-end gap-3">
                             <Button onClick={onClose} variant="secondary">Annulla</Button>
-                            <Button onClick={handleSaveSettings} variant="primary">Salva Impostazioni</Button>
+                            <Button onClick={handleSaveSettings} variant="primary">Salva e Connetti</Button>
                         </div>
                     </div>
                 </div>
@@ -542,6 +553,7 @@
         };
 
         const CharacterEditor = ({ initialData, onSave, onCancel }) => {
+            // ... (rest of editor code is same, omitted for brevity, logic handled in parent App mostly)
             const [char, setChar] = useState(initialData || {
                 id: Date.now(),
                 name: '',
@@ -561,7 +573,7 @@
                 money: { cp: 0, sp: 0, gp: 0 },
                 inventory: [],
                 spells: [],
-                spellSlots: {}, // { 1: {current:0, max:0}, ... }
+                spellSlots: {},
                 resources: { sorcery: {current: 0, max: 0}, magic: {current: 0, max: 0} }
             });
 
@@ -591,7 +603,6 @@
                 }));
             };
 
-            // GESTIONE IMMAGINE CON RESIZING
             const handleImageUpload = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -689,10 +700,8 @@
                 }));
             };
 
-            // LOGICA FILTRO E ORDINAMENTO
             const getFilteredInventory = () => {
                 let items = char.inventory || [];
-                // Filtro
                 if (invFilter !== 'Tutti') {
                     if (invFilter === 'Arsenale') {
                         items = items.filter(i => ['Arma', 'Armatura'].includes(i.type));
@@ -702,7 +711,6 @@
                         items = items.filter(i => i.type === invFilter);
                     }
                 }
-                // Ordinamento
                 return items.sort((a, b) => {
                     if (invSort === 'Nome') return a.name.localeCompare(b.name);
                     if (invSort === 'Tipo') return a.type.localeCompare(b.type);
@@ -713,7 +721,6 @@
 
             const filteredItems = getFilteredInventory();
 
-            // Gestione Slot
             const handleSlotChange = (level, type, val) => {
                 const safeVal = Math.max(0, parseInt(val) || 0);
                 setChar(prev => ({
@@ -725,7 +732,6 @@
                 }));
             };
 
-            // Gestione Risorse
             const handleResourceChange = (res, type, val) => {
                 const safeVal = Math.max(0, parseInt(val) || 0);
                 setChar(prev => ({
@@ -751,6 +757,7 @@
 
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                         <div className="md:col-span-4 flex flex-col gap-6">
+                            {/* ... SIDEBAR CONTENT ... */}
                             <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
                                 <div className="aspect-square bg-slate-900 rounded-lg overflow-hidden relative mb-4 border-2 border-dashed border-slate-700 hover:border-amber-500/50 transition-colors group">
                                     {char.imageUrl ? (
@@ -1143,30 +1150,151 @@
             const [editingId, setEditingId] = useState(null);
             const [isSettingsOpen, setIsSettingsOpen] = useState(false);
             const importInputRef = useRef(null);
+            
+            // Sync states
+            const [syncStatus, setSyncStatus] = useState('offline'); // offline, connecting, synced, saving, error
+            const isRemoteUpdate = useRef(false);
+            const firebaseRef = useRef(null);
+            const dbRef = useRef(null);
 
+            // Caricamento dati locali all'avvio
             useEffect(() => {
                 const saved = localStorage.getItem('dnd-characters');
                 if (saved) {
                     try {
                         setCharacters(JSON.parse(saved));
-                    } catch (e) {
-                        console.error("Errore nel caricamento dati", e);
-                    }
+                    } catch (e) { console.error(e); }
                 }
             }, []);
 
-            // SAVE SAFEGUARD
+            // Salva su LocalStorage (sempre)
             useEffect(() => {
                 if (characters.length > 0) {
                     try {
                         localStorage.setItem('dnd-characters', JSON.stringify(characters));
                     } catch (e) {
                         if (e.name === 'QuotaExceededError') {
-                            alert("ATTENZIONE: Spazio memoria pieno! Le ultime modifiche (probabilmente l'immagine) non sono state salvate. Prova a cancellare vecchi personaggi o usare immagini più piccole.");
+                            alert("ATTENZIONE: Spazio memoria pieno!");
                         }
                     }
                 }
             }, [characters]);
+
+            // Inizializzazione Firebase e Auto-Sync
+            useEffect(() => {
+                const initFirebase = async () => {
+                    const configStr = localStorage.getItem('dnd-firebase-config');
+                    const syncId = localStorage.getItem('dnd-sync-id');
+
+                    if (!configStr || !syncId) {
+                        setSyncStatus('offline');
+                        return;
+                    }
+
+                    try {
+                        setSyncStatus('connecting');
+                        
+                        // Load scripts only if needed
+                        if (!window.firebase) {
+                            await new Promise((resolve) => {
+                                const script = document.createElement('script');
+                                script.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+                                script.onload = resolve;
+                                document.head.appendChild(script);
+                            });
+                            await new Promise((resolve) => {
+                                const script = document.createElement('script');
+                                script.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js';
+                                script.onload = resolve;
+                                document.head.appendChild(script);
+                            });
+                            await new Promise((resolve) => {
+                                const script = document.createElement('script');
+                                script.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js';
+                                script.onload = resolve;
+                                document.head.appendChild(script);
+                            });
+                        }
+
+                        const firebase = window.firebase;
+                        if (!firebase.apps.length) {
+                            firebase.initializeApp(JSON.parse(configStr));
+                        }
+
+                        // Auth anomimo per sicurezza
+                        await firebase.auth().signInAnonymously();
+
+                        const db = firebase.firestore();
+                        dbRef.current = db;
+                        firebaseRef.current = firebase;
+
+                        // Listener per aggiornamenti dal cloud
+                        const unsubscribe = db.collection('grimorio_data').doc(syncId)
+                            .onSnapshot((doc) => {
+                                if (doc.exists) {
+                                    const data = doc.data();
+                                    const cloudChars = JSON.parse(data.characters);
+                                    
+                                    // Controllo semplice per evitare loop: se la stringa JSON è diversa, aggiorna
+                                    const currentLocalStr = localStorage.getItem('dnd-characters');
+                                    // Normalizziamo per confronto (rimuovendo spazi extra se ci fossero, anche se stringify è standard)
+                                    // Per semplicità, ci fidiamo che se arriva un evento è perché qualcuno ha scritto
+                                    // Tuttavia, noi scriviamo anche.
+                                    // Firebase listener ignora le scritture locali se usiamo { includeMetadataChanges: false } (default)
+                                    // ma per sicurezza usiamo un flag.
+                                    
+                                    // Confrontiamo con lo stato attuale
+                                    // Nota: Confrontare stringhe JSON grosse può essere pesante, ma per <5MB va bene.
+                                    if (JSON.stringify(cloudChars) !== JSON.stringify(characters)) {
+                                        isRemoteUpdate.current = true;
+                                        setCharacters(cloudChars);
+                                        // Reset flag dopo render
+                                        setTimeout(() => isRemoteUpdate.current = false, 100);
+                                    }
+                                }
+                                setSyncStatus('synced');
+                            }, (error) => {
+                                console.error("Sync Error:", error);
+                                setSyncStatus('error');
+                            });
+
+                        return () => unsubscribe();
+
+                    } catch (e) {
+                        console.error("Firebase Init Error:", e);
+                        setSyncStatus('error');
+                    }
+                };
+
+                initFirebase();
+            }, []); // Esegui solo al mount
+
+            // Effetto per Salvataggio Automatico su Cloud (Debounce)
+            useEffect(() => {
+                const saveToCloud = async () => {
+                    const syncId = localStorage.getItem('dnd-sync-id');
+                    if (!dbRef.current || !syncId || isRemoteUpdate.current) return;
+
+                    setSyncStatus('saving');
+                    try {
+                        await dbRef.current.collection('grimorio_data').doc(syncId).set({
+                            characters: JSON.stringify(characters),
+                            updatedAt: new Date().toISOString()
+                        });
+                        setSyncStatus('synced');
+                    } catch (e) {
+                        console.error("Save Error:", e);
+                        setSyncStatus('error');
+                    }
+                };
+
+                const timeoutId = setTimeout(() => {
+                    if (characters.length > 0) saveToCloud();
+                }, 2000); // Salva dopo 2 secondi di inattività
+
+                return () => clearTimeout(timeoutId);
+            }, [characters]);
+
 
             const handleSave = (char) => {
                 if (characters.find(c => c.id === char.id)) {
@@ -1189,118 +1317,10 @@
                 setView('edit');
             };
 
-            // LOGICA DI SINCRONIZZAZIONE FIREBASE
-            const loadFirebaseSDK = async () => {
-                // Carichiamo dinamicamente Firebase dagli script CDN
-                // Usiamo la versione compat che è più facile da integrare in un singolo file HTML senza bundler
-                if (window.firebase) return window.firebase;
-
-                // Caricamento asincrono degli script se non presenti
-                const loadScript = (src) => {
-                    return new Promise((resolve, reject) => {
-                        const script = document.createElement('script');
-                        script.src = src;
-                        script.onload = resolve;
-                        script.onerror = reject;
-                        document.head.appendChild(script);
-                    });
-                };
-
-                try {
-                    await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
-                    await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js');
-                    await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js');
-                    return window.firebase;
-                } catch (e) {
-                    console.error("Errore caricamento Firebase SDK", e);
-                    alert("Impossibile caricare le librerie Firebase. Controlla la tua connessione.");
-                    return null;
-                }
-            };
-
-            const getFirebaseConfig = () => {
-                const configStr = localStorage.getItem('dnd-firebase-config');
-                const syncId = localStorage.getItem('dnd-sync-id');
-                if (!configStr || !syncId) {
-                    alert("Configurazione Firebase mancante. Vai nelle Impostazioni (icona ingranaggio) per configurare il cloud.");
-                    return null;
-                }
-                try {
-                    return { config: JSON.parse(configStr), syncId };
-                } catch (e) {
-                    alert("Configurazione Firebase non valida.");
-                    return null;
-                }
-            };
-
-            const handleCloudUpload = async () => {
-                const settings = getFirebaseConfig();
-                if (!settings) return;
-
-                const firebase = await loadFirebaseSDK();
-                if (!firebase) return;
-
-                // Inizializza se non esiste già
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(settings.config);
-                }
-
-                try {
-                    const db = firebase.firestore();
-                    // Autenticazione anonima per rispettare le regole di sicurezza (se impostate)
-                    await firebase.auth().signInAnonymously();
-                    
-                    await db.collection('grimorio_data').doc(settings.syncId).set({
-                        characters: JSON.stringify(characters),
-                        updatedAt: new Date().toISOString()
-                    });
-                    alert("Salvataggio su Cloud completato con successo!");
-                } catch (e) {
-                    console.error("Errore upload", e);
-                    alert("Errore durante il salvataggio: " + e.message);
-                }
-            };
-
-            const handleCloudDownload = async () => {
-                const settings = getFirebaseConfig();
-                if (!settings) return;
-
-                const firebase = await loadFirebaseSDK();
-                if (!firebase) return;
-
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(settings.config);
-                }
-
-                try {
-                    const db = firebase.firestore();
-                    await firebase.auth().signInAnonymously();
-
-                    const doc = await db.collection('grimorio_data').doc(settings.syncId).get();
-                    
-                    if (doc.exists) {
-                        const data = doc.data();
-                        const cloudChars = JSON.parse(data.characters);
-                        
-                        if (window.confirm(`Trovati ${cloudChars.length} personaggi nel cloud (Ultimo aggiornamento: ${data.updatedAt}). Vuoi sovrascrivere i dati locali?`)) {
-                            setCharacters(cloudChars);
-                            alert("Dati scaricati con successo!");
-                        }
-                    } else {
-                        alert("Nessun dato trovato per l'ID: " + settings.syncId);
-                    }
-                } catch (e) {
-                    console.error("Errore download", e);
-                    alert("Errore durante il download: " + e.message);
-                }
-            };
-
             const handleExport = () => {
                 const dataStr = JSON.stringify(characters, null, 2);
                 const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-                
                 const exportFileDefaultName = `grimorio-backup-${new Date().toISOString().slice(0,10)}.json`;
-
                 const linkElement = document.createElement('a');
                 linkElement.setAttribute('href', dataUri);
                 linkElement.setAttribute('download', exportFileDefaultName);
@@ -1310,37 +1330,38 @@
             const handleImport = (event) => {
                 const file = event.target.files[0];
                 if (!file) return;
-
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     try {
                         const importedChars = JSON.parse(e.target.result);
                         if (Array.isArray(importedChars)) {
-                            if(window.confirm(`Trovati ${importedChars.length} personaggi nel backup. Vuoi importarli? (I personaggi esistenti con lo stesso ID verranno sovrascritti)`)) {
+                            if(window.confirm(`Trovati ${importedChars.length} personaggi. Importare?`)) {
                                 setCharacters(prev => {
                                     const newChars = [...prev];
                                     importedChars.forEach(impChar => {
                                         const index = newChars.findIndex(c => c.id === impChar.id);
-                                        if (index >= 0) {
-                                            newChars[index] = impChar;
-                                        } else {
-                                            newChars.push(impChar);
-                                        }
+                                        if (index >= 0) newChars[index] = impChar;
+                                        else newChars.push(impChar);
                                     });
                                     return newChars;
                                 });
-                                alert("Importazione completata!");
                             }
-                        } else {
-                            alert("Il file non sembra valido.");
                         }
-                    } catch (err) {
-                        alert("Errore durante la lettura del file.");
-                        console.error(err);
-                    }
+                    } catch (err) { alert("Errore file."); }
                 };
                 reader.readAsText(file);
                 event.target.value = null;
+            };
+
+            // Icona stato Sync
+            const getSyncIcon = () => {
+                switch(syncStatus) {
+                    case 'saving': return <Cloud className="text-amber-500 animate-pulse" title="Salvataggio in corso..." />;
+                    case 'synced': return <CloudCheck className="text-green-500" title="Sincronizzato" />;
+                    case 'error': return <CloudOff className="text-red-500" title="Errore Sincronizzazione (Verifica Auth Anonima)" />;
+                    case 'connecting': return <Cloud className="text-slate-500 animate-pulse" title="Connessione..." />;
+                    default: return <CloudOff className="text-slate-600" title="Cloud non configurato" />;
+                }
             };
 
             return (
@@ -1352,34 +1373,29 @@
                             </div>
                             <h1 className="text-xl font-bold tracking-tight text-slate-100">GRIMORIO <span className="text-amber-500">D&D</span></h1>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-3 items-center">
                             {view === 'list' && (
                                 <>
-                                    <input 
-                                        type="file" 
-                                        ref={importInputRef} 
-                                        onChange={handleImport} 
-                                        accept=".json" 
-                                        className="hidden" 
-                                    />
+                                    {/* Sync Status Icon */}
+                                    <div className="mr-2 cursor-help">{getSyncIcon()}</div>
+
+                                    <input type="file" ref={importInputRef} onChange={handleImport} accept=".json" className="hidden" />
+                                    
                                     <Button onClick={() => setIsSettingsOpen(true)} variant="ghost" className="text-slate-400 hover:text-white" title="Impostazioni Cloud">
                                         <Settings size={20} />
                                     </Button>
-                                    <div className="w-px bg-slate-700 mx-1"></div>
-                                    <Button onClick={handleCloudUpload} variant="secondary" title="Salva su Cloud">
-                                        <CloudUpload size={20} />
-                                    </Button>
-                                    <Button onClick={handleCloudDownload} variant="secondary" title="Carica da Cloud">
-                                        <CloudDownload size={20} />
-                                    </Button>
-                                    <div className="w-px bg-slate-700 mx-1"></div>
-                                    <Button onClick={() => importInputRef.current.click()} variant="secondary" title="Importa File">
+                                    
+                                    <div className="w-px bg-slate-700 h-6"></div>
+                                    
+                                    <Button onClick={() => importInputRef.current.click()} variant="secondary" title="Importa File Locale">
                                         <Upload size={20} />
                                     </Button>
-                                    <Button onClick={handleExport} variant="secondary" title="Esporta File">
+                                    <Button onClick={handleExport} variant="secondary" title="Esporta File Locale">
                                         <Download size={20} />
                                     </Button>
-                                    <div className="w-px bg-slate-700 mx-2"></div>
+                                    
+                                    <div className="w-px bg-slate-700 h-6 mx-1"></div>
+                                    
                                     <Button onClick={() => startEdit(null)} className="animate-pulse-slow">
                                         <Plus size={20} /> Crea Eroe
                                     </Button>
@@ -1448,7 +1464,7 @@
                     <SettingsModal 
                         isOpen={isSettingsOpen} 
                         onClose={() => setIsSettingsOpen(false)}
-                        onSave={() => alert("Impostazioni salvate!")}
+                        onSave={() => window.location.reload()} 
                     />
                     <DiceRoller />
                 </div>
