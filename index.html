@@ -6,7 +6,7 @@
     <title>Grimorio D&D</title>
     
     <!-- FAVICON: Aggiungi il tuo file 'icon.png' nella stessa cartella -->
-    <link rel="icon" type="image/png" href="DnD.png">
+    <link rel="icon" type="image/png" href="icon.png">
     
     <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
@@ -146,7 +146,10 @@
             Filter: (props) => <IconBase {...props}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></IconBase>,
             ArrowDownAZ: (props) => <IconBase {...props}><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M20 8h-5"/><path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10"/><path d="M15 14h5l-5 7h5"/></IconBase>,
             Zap: (props) => <IconBase {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></IconBase>,
-            Flame: (props) => <IconBase {...props}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.6-3.3.3.9.8 1.6 1.9 2.8z"/></IconBase>
+            Flame: (props) => <IconBase {...props}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.6-3.3.3.9.8 1.6 1.9 2.8z"/></IconBase>,
+            Settings: (props) => <IconBase {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>,
+            CloudUpload: (props) => <IconBase {...props}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></IconBase>,
+            CloudDownload: (props) => <IconBase {...props}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4 4 4-4"/></IconBase>
         };
 
         const { 
@@ -154,7 +157,8 @@
             Save, Trash2, Plus, Minus, ChevronLeft, Dices, 
             Image: ImageIcon, Upload, Download, Wand2, BookOpen,
             Feather, Axe, Crosshair, Music, Ghost, Hammer,
-            Backpack, Sparkles, Edit, Check, Filter, ArrowDownAZ, Zap, Flame
+            Backpack, Sparkles, Edit, Check, Filter, ArrowDownAZ, Zap, Flame,
+            Settings, CloudUpload, CloudDownload
         } = Icons;
 
         // --- SETUP INIZIALE ---
@@ -461,6 +465,77 @@
                             </div>
                         )}
                         {rolling && <div className="mt-2 text-sm text-slate-400">Rotolando...</div>}
+                    </div>
+                </div>
+            );
+        };
+
+        const SettingsModal = ({ isOpen, onClose, onSave }) => {
+            const [configJson, setConfigJson] = useState('');
+            const [syncId, setSyncId] = useState('');
+
+            useEffect(() => {
+                const savedConfig = localStorage.getItem('dnd-firebase-config');
+                const savedId = localStorage.getItem('dnd-sync-id');
+                if (savedConfig) setConfigJson(savedConfig);
+                if (savedId) setSyncId(savedId);
+            }, [isOpen]);
+
+            if (!isOpen) return null;
+
+            const handleSaveSettings = () => {
+                try {
+                    // Validiamo che sia un JSON valido
+                    if (configJson.trim()) {
+                        JSON.parse(configJson);
+                    }
+                    localStorage.setItem('dnd-firebase-config', configJson);
+                    localStorage.setItem('dnd-sync-id', syncId);
+                    onSave();
+                    onClose();
+                } catch (e) {
+                    alert("Il JSON di configurazione non è valido.");
+                }
+            };
+
+            return (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                    <div className="bg-slate-900 border border-slate-700 p-6 rounded-xl w-full max-w-lg shadow-2xl">
+                        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <Settings size={24} className="text-amber-500"/> Impostazioni Cloud
+                        </h2>
+                        
+                        <div className="mb-4">
+                            <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+                                ID Sincronizzazione (Nome univoco per i tuoi dati)
+                            </label>
+                            <input 
+                                type="text" 
+                                value={syncId}
+                                onChange={(e) => setSyncId(e.target.value)}
+                                placeholder="es. mario-rossi-dnd-2024"
+                                className="w-full bg-slate-800 border border-slate-600 rounded p-2 text-white outline-none focus:border-amber-500"
+                            />
+                            <p className="text-xs text-slate-500 mt-1">Usa questo ID su tutti i tuoi dispositivi per accedere agli stessi dati.</p>
+                        </div>
+
+                        <div className="mb-6">
+                            <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+                                Configurazione Firebase (JSON)
+                            </label>
+                            <textarea 
+                                value={configJson}
+                                onChange={(e) => setConfigJson(e.target.value)}
+                                placeholder='{"apiKey": "...", "authDomain": "...", ...}'
+                                className="w-full bg-slate-800 border border-slate-600 rounded p-2 text-xs text-slate-300 h-32 font-mono outline-none focus:border-amber-500"
+                            />
+                            <p className="text-xs text-slate-500 mt-1">Incolla qui l'oggetto di configurazione fornito dalla console Firebase.</p>
+                        </div>
+
+                        <div className="flex justify-end gap-3">
+                            <Button onClick={onClose} variant="secondary">Annulla</Button>
+                            <Button onClick={handleSaveSettings} variant="primary">Salva Impostazioni</Button>
+                        </div>
                     </div>
                 </div>
             );
@@ -1066,6 +1141,7 @@
             const [view, setView] = useState('list');
             const [characters, setCharacters] = useState([]);
             const [editingId, setEditingId] = useState(null);
+            const [isSettingsOpen, setIsSettingsOpen] = useState(false);
             const importInputRef = useRef(null);
 
             useEffect(() => {
@@ -1111,6 +1187,112 @@
             const startEdit = (char) => {
                 setEditingId(char ? char.id : null);
                 setView('edit');
+            };
+
+            // LOGICA DI SINCRONIZZAZIONE FIREBASE
+            const loadFirebaseSDK = async () => {
+                // Carichiamo dinamicamente Firebase dagli script CDN
+                // Usiamo la versione compat che è più facile da integrare in un singolo file HTML senza bundler
+                if (window.firebase) return window.firebase;
+
+                // Caricamento asincrono degli script se non presenti
+                const loadScript = (src) => {
+                    return new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = src;
+                        script.onload = resolve;
+                        script.onerror = reject;
+                        document.head.appendChild(script);
+                    });
+                };
+
+                try {
+                    await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+                    await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js');
+                    await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js');
+                    return window.firebase;
+                } catch (e) {
+                    console.error("Errore caricamento Firebase SDK", e);
+                    alert("Impossibile caricare le librerie Firebase. Controlla la tua connessione.");
+                    return null;
+                }
+            };
+
+            const getFirebaseConfig = () => {
+                const configStr = localStorage.getItem('dnd-firebase-config');
+                const syncId = localStorage.getItem('dnd-sync-id');
+                if (!configStr || !syncId) {
+                    alert("Configurazione Firebase mancante. Vai nelle Impostazioni (icona ingranaggio) per configurare il cloud.");
+                    return null;
+                }
+                try {
+                    return { config: JSON.parse(configStr), syncId };
+                } catch (e) {
+                    alert("Configurazione Firebase non valida.");
+                    return null;
+                }
+            };
+
+            const handleCloudUpload = async () => {
+                const settings = getFirebaseConfig();
+                if (!settings) return;
+
+                const firebase = await loadFirebaseSDK();
+                if (!firebase) return;
+
+                // Inizializza se non esiste già
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(settings.config);
+                }
+
+                try {
+                    const db = firebase.firestore();
+                    // Autenticazione anonima per rispettare le regole di sicurezza (se impostate)
+                    await firebase.auth().signInAnonymously();
+                    
+                    await db.collection('grimorio_data').doc(settings.syncId).set({
+                        characters: JSON.stringify(characters),
+                        updatedAt: new Date().toISOString()
+                    });
+                    alert("Salvataggio su Cloud completato con successo!");
+                } catch (e) {
+                    console.error("Errore upload", e);
+                    alert("Errore durante il salvataggio: " + e.message);
+                }
+            };
+
+            const handleCloudDownload = async () => {
+                const settings = getFirebaseConfig();
+                if (!settings) return;
+
+                const firebase = await loadFirebaseSDK();
+                if (!firebase) return;
+
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(settings.config);
+                }
+
+                try {
+                    const db = firebase.firestore();
+                    await firebase.auth().signInAnonymously();
+
+                    const doc = await db.collection('grimorio_data').doc(settings.syncId).get();
+                    
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const cloudChars = JSON.parse(data.characters);
+                        
+                        if (window.confirm(`Trovati ${cloudChars.length} personaggi nel cloud (Ultimo aggiornamento: ${data.updatedAt}). Vuoi sovrascrivere i dati locali?`)) {
+                            setCharacters(cloudChars);
+                            alert("Dati scaricati con successo!");
+                        }
+                    } else {
+                        alert("Nessun dato trovato per l'ID: " + settings.syncId);
+                    }
+                } catch (e) {
+                    console.error("Errore download", e);
+                    alert("Errore durante il download: " + e.message);
+                }
             };
 
             const handleExport = () => {
@@ -1180,10 +1362,21 @@
                                         accept=".json" 
                                         className="hidden" 
                                     />
-                                    <Button onClick={() => importInputRef.current.click()} variant="secondary" title="Importa Backup">
+                                    <Button onClick={() => setIsSettingsOpen(true)} variant="ghost" className="text-slate-400 hover:text-white" title="Impostazioni Cloud">
+                                        <Settings size={20} />
+                                    </Button>
+                                    <div className="w-px bg-slate-700 mx-1"></div>
+                                    <Button onClick={handleCloudUpload} variant="secondary" title="Salva su Cloud">
+                                        <CloudUpload size={20} />
+                                    </Button>
+                                    <Button onClick={handleCloudDownload} variant="secondary" title="Carica da Cloud">
+                                        <CloudDownload size={20} />
+                                    </Button>
+                                    <div className="w-px bg-slate-700 mx-1"></div>
+                                    <Button onClick={() => importInputRef.current.click()} variant="secondary" title="Importa File">
                                         <Upload size={20} />
                                     </Button>
-                                    <Button onClick={handleExport} variant="secondary" title="Esporta Backup">
+                                    <Button onClick={handleExport} variant="secondary" title="Esporta File">
                                         <Download size={20} />
                                     </Button>
                                     <div className="w-px bg-slate-700 mx-2"></div>
@@ -1252,6 +1445,11 @@
                             />
                         )}
                     </main>
+                    <SettingsModal 
+                        isOpen={isSettingsOpen} 
+                        onClose={() => setIsSettingsOpen(false)}
+                        onSave={() => alert("Impostazioni salvate!")}
+                    />
                     <DiceRoller />
                 </div>
             );
@@ -1265,4 +1463,4 @@
         );
     </script>
 </body>
-</html>"
+</html>
