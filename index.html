@@ -37,6 +37,7 @@
         /* Gestione scrollbar scura */
         ::-webkit-scrollbar {
             width: 8px;
+            height: 8px;
         }
         ::-webkit-scrollbar-track {
             background: #0f172a; 
@@ -150,7 +151,9 @@
             Settings: (props) => <IconBase {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>,
             Cloud: (props) => <IconBase {...props}><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M17.5 19h2c1.4 0 2.5-1.1 2.5-2.5S20.9 14 19.5 14c-.1 0-.3 0-.4.1"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>,
             CloudCheck: (props) => <IconBase {...props}><path d="M12 21a6 6 0 0 0 6-6c0-3.3-2.7-6-6-6-.4 0-.8 0-1.2.1"/><path d="M16 16l2 2 4-4"/><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>,
-            CloudOff: (props) => <IconBase {...props}><path d="M2 2l20 20"/><path d="M5.8 5.8a6 6 0 0 1 8.8 0"/><path d="M12 21a6 6 0 0 0 6-6c0-3.3-2.7-6-6-6-.4 0-.8 0-1.2.1"/><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>
+            CloudOff: (props) => <IconBase {...props}><path d="M2 2l20 20"/><path d="M5.8 5.8a6 6 0 0 1 8.8 0"/><path d="M12 21a6 6 0 0 0 6-6c0-3.3-2.7-6-6-6-.4 0-.8 0-1.2.1"/><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>,
+            LayoutGrid: (props) => <IconBase {...props}><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></IconBase>,
+            LayoutList: (props) => <IconBase {...props}><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><path d="M14 4h7"/><path d="M14 9h7"/><path d="M14 15h7"/><path d="M14 20h7"/></IconBase>
         };
 
         const { 
@@ -159,7 +162,8 @@
             Image: ImageIcon, Upload, Download, Wand2, BookOpen,
             Feather, Axe, Crosshair, Music, Ghost, Hammer,
             Backpack, Sparkles, Edit, Check, Filter, ArrowDownAZ, Zap, Flame,
-            Settings, Cloud, CloudCheck, CloudOff
+            Settings, Cloud, CloudCheck, CloudOff,
+            LayoutGrid, LayoutList
         } = Icons;
 
         // --- SETUP INIZIALE ---
@@ -203,7 +207,7 @@
 
         // --- COMPONENTI UI ---
         const Button = ({ children, onClick, variant = 'primary', className = '', type = 'button', title = '' }) => {
-            const baseStyle = "px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2";
+            const baseStyle = "px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 whitespace-nowrap";
             const variants = {
                 primary: "bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20",
                 secondary: "bg-slate-700 hover:bg-slate-600 text-slate-200",
@@ -391,9 +395,43 @@
             );
         };
 
-        const CharacterCard = ({ character, onEdit, onDelete }) => {
+        const CharacterCard = ({ character, onEdit, onDelete, viewMode }) => {
             const ClassIconObj = CLASSES.find(c => c.name === character.class)?.icon || User;
             
+            // Layout a Lista (Compatta Orizzontale)
+            if (viewMode === 'list') {
+                return (
+                    <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden hover:shadow-xl hover:border-amber-500/30 transition-all duration-300 flex items-stretch">
+                        <div className="w-24 bg-slate-900 relative shrink-0">
+                            {character.imageUrl ? (
+                                <img src={character.imageUrl} alt={character.name} className="w-full h-full object-cover opacity-80" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <ClassIconObj size={32} className="text-slate-700" />
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-4 flex-1 flex flex-col justify-center">
+                            <h3 className="text-lg font-bold text-white truncate">{character.name || "Senza Nome"}</h3>
+                            <p className="text-xs text-amber-400 font-medium mb-2">{character.race} {character.class} (Lv. {character.level})</p>
+                            <div className="flex gap-4 text-xs text-slate-400">
+                                <div><span className="font-bold text-slate-200">{character.hpMax}</span> HP</div>
+                                <div><span className="font-bold text-slate-200">{character.ac}</span> CA</div>
+                            </div>
+                        </div>
+                        <div className="flex flex-col border-l border-slate-700">
+                            <button onClick={() => onEdit(character)} className="flex-1 px-4 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">
+                                <Edit size={18} />
+                            </button>
+                            <button onClick={() => onDelete(character.id)} className="flex-1 px-4 hover:bg-red-900/30 text-slate-400 hover:text-red-400 transition-colors border-t border-slate-700">
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Layout a Galleria (Card Verticale)
             return (
                 <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden hover:shadow-xl hover:shadow-amber-900/10 hover:border-amber-500/30 transition-all duration-300 group">
                     <div className="h-48 w-full bg-slate-900 relative overflow-hidden">
@@ -485,21 +523,16 @@
             const handleSaveSettings = () => {
                 try {
                     let clean = configJson.trim();
-                    // Pulizia "aggressiva" del JSON incollato
-                    // Rimuove 'const firebaseConfig = ' o simili e il punto e virgola finale
                     clean = clean.replace(/^(const|var|let)\s+\w+\s*=\s*/, '').replace(/;$/, '');
                     
-                    // Cerca la prima { e l'ultima } per estrarre solo l'oggetto
                     const firstBrace = clean.indexOf('{');
                     const lastBrace = clean.lastIndexOf('}');
                     if (firstBrace !== -1 && lastBrace !== -1) {
                         clean = clean.substring(firstBrace, lastBrace + 1);
                     }
 
-                    // Prova a parsare
                     JSON.parse(clean);
                     
-                    // Se ok, salva
                     localStorage.setItem('dnd-firebase-config', clean);
                     localStorage.setItem('dnd-sync-id', syncId);
                     onSave();
@@ -1149,6 +1182,7 @@
             const [characters, setCharacters] = useState([]);
             const [editingId, setEditingId] = useState(null);
             const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+            const [viewMode, setViewMode] = useState('gallery'); // 'gallery' | 'list'
             const importInputRef = useRef(null);
             
             // Sync states
@@ -1235,16 +1269,6 @@
                                     const data = doc.data();
                                     const cloudChars = JSON.parse(data.characters);
                                     
-                                    // Controllo semplice per evitare loop: se la stringa JSON è diversa, aggiorna
-                                    const currentLocalStr = localStorage.getItem('dnd-characters');
-                                    // Normalizziamo per confronto (rimuovendo spazi extra se ci fossero, anche se stringify è standard)
-                                    // Per semplicità, ci fidiamo che se arriva un evento è perché qualcuno ha scritto
-                                    // Tuttavia, noi scriviamo anche.
-                                    // Firebase listener ignora le scritture locali se usiamo { includeMetadataChanges: false } (default)
-                                    // ma per sicurezza usiamo un flag.
-                                    
-                                    // Confrontiamo con lo stato attuale
-                                    // Nota: Confrontare stringhe JSON grosse può essere pesante, ma per <5MB va bene.
                                     if (JSON.stringify(cloudChars) !== JSON.stringify(characters)) {
                                         isRemoteUpdate.current = true;
                                         setCharacters(cloudChars);
@@ -1366,47 +1390,51 @@
 
             return (
                 <div className="min-h-screen font-sans selection:bg-amber-500/30">
-                    <nav className="border-b border-slate-800 bg-slate-900 px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-lg">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-amber-600 p-2 rounded-lg text-slate-900">
-                                <Sword size={24} />
+                    <nav className="border-b border-slate-800 bg-slate-900 px-4 py-3 sticky top-0 z-50 shadow-lg">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 shrink-0">
+                                <div className="bg-amber-600 p-2 rounded-lg text-slate-900">
+                                    <Sword size={24} />
+                                </div>
+                                <h1 className="text-xl font-bold tracking-tight text-slate-100 hidden sm:block">GRIMORIO <span className="text-amber-500">D&D</span></h1>
+                                <h1 className="text-xl font-bold tracking-tight text-slate-100 sm:hidden">GRIMORIO</h1>
                             </div>
-                            <h1 className="text-xl font-bold tracking-tight text-slate-100">GRIMORIO <span className="text-amber-500">D&D</span></h1>
-                        </div>
-                        <div className="flex gap-3 items-center">
-                            {view === 'list' && (
-                                <>
-                                    {/* Sync Status Icon */}
-                                    <div className="mr-2 cursor-help">{getSyncIcon()}</div>
+                            
+                            <div className="flex gap-2 items-center overflow-x-auto no-scrollbar ml-4 pl-2">
+                                {view === 'list' && (
+                                    <>
+                                        {/* Sync Status Icon */}
+                                        <div className="mr-2 cursor-help shrink-0">{getSyncIcon()}</div>
 
-                                    <input type="file" ref={importInputRef} onChange={handleImport} accept=".json" className="hidden" />
-                                    
-                                    <Button onClick={() => setIsSettingsOpen(true)} variant="ghost" className="text-slate-400 hover:text-white" title="Impostazioni Cloud">
-                                        <Settings size={20} />
-                                    </Button>
-                                    
-                                    <div className="w-px bg-slate-700 h-6"></div>
-                                    
-                                    <Button onClick={() => importInputRef.current.click()} variant="secondary" title="Importa File Locale">
-                                        <Upload size={20} />
-                                    </Button>
-                                    <Button onClick={handleExport} variant="secondary" title="Esporta File Locale">
-                                        <Download size={20} />
-                                    </Button>
-                                    
-                                    <div className="w-px bg-slate-700 h-6 mx-1"></div>
-                                    
-                                    <Button onClick={() => startEdit(null)} className="animate-pulse-slow">
-                                        <Plus size={20} /> Crea Eroe
-                                    </Button>
-                                </>
-                            )}
+                                        <input type="file" ref={importInputRef} onChange={handleImport} accept=".json" className="hidden" />
+                                        
+                                        <Button onClick={() => setIsSettingsOpen(true)} variant="ghost" className="text-slate-400 hover:text-white shrink-0 px-2" title="Impostazioni Cloud">
+                                            <Settings size={20} />
+                                        </Button>
+                                        
+                                        <div className="w-px bg-slate-700 h-6 shrink-0"></div>
+                                        
+                                        <Button onClick={() => importInputRef.current.click()} variant="secondary" className="shrink-0 px-3" title="Importa File Locale">
+                                            <Upload size={20} />
+                                        </Button>
+                                        <Button onClick={handleExport} variant="secondary" className="shrink-0 px-3" title="Esporta File Locale">
+                                            <Download size={20} />
+                                        </Button>
+                                        
+                                        <div className="w-px bg-slate-700 h-6 mx-1 shrink-0"></div>
+                                        
+                                        <Button onClick={() => startEdit(null)} className="animate-pulse-slow shrink-0">
+                                            <Plus size={20} /> <span className="hidden md:inline">Crea Eroe</span>
+                                        </Button>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </nav>
 
-                    <main className="container mx-auto p-6">
+                    <main className="container mx-auto p-4 md:p-6">
                         {view === 'list' && (
-                            <div className="space-y-8 animate-fade-in">
+                            <div className="space-y-6 animate-fade-in">
                                 {characters.length === 0 ? (
                                     <div className="text-center py-20 flex flex-col items-center">
                                         <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-6 text-slate-600">
@@ -1427,26 +1455,49 @@
                                     <>
                                         <div className="flex items-center justify-between">
                                             <h2 className="text-slate-400 font-medium uppercase tracking-widest text-sm">I tuoi Personaggi ({characters.length})</h2>
+                                            <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
+                                                <button 
+                                                    onClick={() => setViewMode('gallery')}
+                                                    className={`p-2 rounded ${viewMode === 'gallery' ? 'bg-slate-700 text-amber-500 shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                                                    title="Vista Galleria"
+                                                >
+                                                    <LayoutGrid size={18} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => setViewMode('list')}
+                                                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-slate-700 text-amber-500 shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                                                    title="Vista Lista"
+                                                >
+                                                    <LayoutList size={18} />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        
+                                        <div className={viewMode === 'gallery' 
+                                            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
+                                            : "flex flex-col gap-4"
+                                        }>
                                             {characters.map(char => (
                                                 <CharacterCard 
                                                     key={char.id} 
                                                     character={char} 
                                                     onEdit={startEdit} 
                                                     onDelete={handleDelete} 
+                                                    viewMode={viewMode}
                                                 />
                                             ))}
                                             
-                                            <button 
-                                                onClick={() => startEdit(null)}
-                                                className="flex flex-col items-center justify-center min-h-[300px] bg-slate-900/50 border-2 border-dashed border-slate-800 rounded-xl hover:border-amber-500/50 hover:bg-slate-900 transition-all group"
-                                            >
-                                                <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-600 group-hover:text-amber-500 group-hover:scale-110 transition-all">
-                                                    <Plus size={32} />
-                                                </div>
-                                                <span className="mt-4 font-medium text-slate-500 group-hover:text-amber-500">Aggiungi Nuovo</span>
-                                            </button>
+                                            {viewMode === 'gallery' && (
+                                                <button 
+                                                    onClick={() => startEdit(null)}
+                                                    className="flex flex-col items-center justify-center min-h-[300px] bg-slate-900/50 border-2 border-dashed border-slate-800 rounded-xl hover:border-amber-500/50 hover:bg-slate-900 transition-all group"
+                                                >
+                                                    <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-600 group-hover:text-amber-500 group-hover:scale-110 transition-all">
+                                                        <Plus size={32} />
+                                                    </div>
+                                                    <span className="mt-4 font-medium text-slate-500 group-hover:text-amber-500">Aggiungi Nuovo</span>
+                                                </button>
+                                            )}
                                         </div>
                                     </>
                                 )}
