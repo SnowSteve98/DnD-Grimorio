@@ -1,7 +1,7 @@
 {
   "name": "DnD Grimoire",
   "short_name": "DnD Grimoire",
-  "start_url": "",
+  "start_url": "/",
   "display": "standalone",
   "theme_color": "#11121c",
   "background_color": "#11121c"
@@ -21,3 +21,4 @@
   ]
 
 }
+
