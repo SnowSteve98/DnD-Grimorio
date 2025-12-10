@@ -3,8 +3,8 @@
   "short_name": "DnD Grimoire",
   "start_url": "",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "theme_color": "#11121c",
+  "background_color": "#11121c"
   "icons": [
     {
       "src": "DnD.png",
@@ -19,4 +19,5 @@
       "purpose": "any maskable"
     }
   ]
+
 }
