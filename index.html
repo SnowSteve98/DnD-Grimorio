@@ -3,177 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#11121c">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Grimorio D&D</title>
-    
-    <!-- FAVICON: Aggiungi il tuo file 'icon.png' nella stessa cartella -->
     <link rel="icon" type="image/png" href="dnd_favicon.png">
     <link rel="apple-touch-icon" sizes="512x512" href="DnD.png">
     <link rel="manifest" href="manifest.json">
     
-    <!-- React & ReactDOM -->
+    <!-- Libraries -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    
-    <!-- Babel per tradurre JSX nel browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
     <style>
-        /* Animazioni Custom */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        /* Utility classes */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Hide number input spinners */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
         }
-        .animate-fade-in {
-            animation: fadeIn 0.4s ease-out forwards;
-        }
-        .animate-pulse-slow {
-            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .7; }
-        }
-        /* Gestione scrollbar scura */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569; 
+        input[type=number] {
+            -moz-appearance: textfield;
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-200 min-h-screen">
+<body class="bg-slate-950 text-slate-200 min-h-screen font-sans">
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- ERROR BOUNDARY (Per evitare schermate nere) ---
+        // --- DATA: SPELL SRD DATABASE (EXPANDED) ---
+        const SPELL_DB = [
+            // Cantrips
+            { n: "Dardo di Fuoco", l: 0, c: ["Mago", "Stregone", "Artefice"], d: "1d10 danni fuoco a distanza. Aumenta ai livelli 5, 11, 17." },
+            { n: "Luce", l: 0, c: ["Bardo", "Chierico", "Mago", "Stregone", "Artefice"], d: "Oggetto emana luce intensa 6m e fioca 6m per 1 ora." },
+            { n: "Mano Magica", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock", "Artefice"], d: "Mano spettrale manipola oggetti entro 9m." },
+            { n: "Prestidigitazione", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Effetti sensoriali minori, accendere fuochi, pulire." },
+            { n: "Deflagrazione Occulta", l: 0, c: ["Warlock"], d: "1d10 danni forza. Raggi multipli ai livelli alti." },
+            { n: "Guida", l: 0, c: ["Chierico", "Druido", "Artefice"], d: "+1d4 a una prova di abilità." },
+            { n: "Messaggio", l: 0, c: ["Bardo", "Mago", "Stregone"], d: "Sussurri un messaggio a creatura entro 36m." },
+            { n: "Illusione Minore", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Crei suono o immagine di un oggetto immobile." },
+            { n: "Riparare", l: 0, c: ["Bardo", "Chierico", "Druido", "Mago", "Artefice"], d: "Ripari una singola rottura in un oggetto." },
+            { n: "Tocco Gelido", l: 0, c: ["Mago", "Stregone", "Warlock"], d: "1d8 necrotici, bersaglio non può recuperare PF." },
+            
+            // Level 1
+            { n: "Dardo Incantato", l: 1, c: ["Mago", "Stregone"], d: "3 dardi infallibili, 1d4+1 forza ciascuno." },
+            { n: "Scudo", l: 1, c: ["Mago", "Stregone"], d: "Reazione: +5 CA e immunità a Dardo Incantato." },
+            { n: "Armatura Magica", l: 1, c: ["Mago", "Stregone"], d: "CA diventa 13 + Des." },
+            { n: "Cura Ferite", l: 1, c: ["Bardo", "Chierico", "Druido", "Paladino", "Ranger"], d: "Cura 1d8 + mod." },
+            { n: "Parola Guaritrice", l: 1, c: ["Bardo", "Chierico", "Druido"], d: "Bonus action: cura 1d4 + mod a distanza." },
+            { n: "Sonno", l: 1, c: ["Bardo", "Mago", "Stregone"], d: "Addormenta creature per 5d8 PF totali." },
+            { n: "Identificare", l: 1, c: ["Bardo", "Mago", "Artefice"], d: "Rivela proprietà magiche di un oggetto." },
+            { n: "Individuazione del Magico", l: 1, c: ["Tutti"], d: "Percepisci presenza di magia entro 9m." },
+            { n: "Mani Brucianti", l: 1, c: ["Mago", "Stregone"], d: "Cono 4.5m, 3d6 fuoco, dimezza TS Des." },
+            { n: "Dardo Tracciante", l: 1, c: ["Chierico"], d: "4d6 danni radiosi e vantaggio prossimo TxC." },
+
+            // Level 2
+            { n: "Passo Velato", l: 2, c: ["Mago", "Stregone", "Warlock", "Ranger"], d: "Teletrasporto 9m come azione bonus." },
+            { n: "Invisibilità", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock", "Artefice"], d: "Creatura invisibile finché non attacca/lancia incantesimi." },
+            { n: "Immobilizza Persone", l: 2, c: ["Bardo", "Chierico", "Druido", "Mago", "Stregone", "Warlock"], d: "Paralizza umanoide su TS Saggezza fallito." },
+            { n: "Raggio Rovente", l: 2, c: ["Mago", "Stregone"], d: "3 raggi, 2d6 fuoco ciascuno." },
+            { n: "Frantumare", l: 2, c: ["Bardo", "Chierico", "Mago", "Stregone", "Warlock"], d: "Sfera raggio 3m, 3d8 tuono, TS Cos dimezza. Danni a oggetti/costrutti." },
+            { n: "Immagine Speculare", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Crea 3 copie illusorie che possono assorbire gli attacchi." },
+            { n: "Cecità/Sordità", l: 2, c: ["Bardo", "Chierico", "Mago", "Stregone"], d: "Rende cieco o sordo un bersaglio. TS Cos." },
+
+            // Level 3
+            { n: "Palla di Fuoco", l: 3, c: ["Mago", "Stregone"], d: "8d6 fuoco in raggio 6m." },
+            { n: "Controincantesimo", l: 3, c: ["Mago", "Stregone", "Warlock"], d: "Interrompi incantesimo avversario." },
+            { n: "Volare", l: 3, c: ["Mago", "Stregone", "Warlock", "Artefice"], d: "Velocità volo 18m." },
+            { n: "Rianimare Morti", l: 3, c: ["Bardo", "Chierico", "Paladino"], d: "Ritorna in vita creatura morta da <1 min." },
+            { n: "Spiriti Guardiani", l: 3, c: ["Chierico", "Paladino"], d: "Aura dannosa 3d8 attorno a te." },
+            { n: "Velocità", l: 3, c: ["Mago", "Stregone", "Artefice"], d: "+2 CA, raddoppia velocità, azione extra." },
+            
+            // Level 4
+            { n: "Metamorfosi", l: 4, c: ["Bardo", "Druido", "Mago", "Stregone"], d: "Trasforma creatura in bestia." },
+            { n: "Porta Dimensionale", l: 4, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Teletrasporto 150m con un passeggero." },
+            { n: "Bandimento", l: 4, c: ["Chierico", "Mago", "Paladino", "Stregone", "Warlock"], d: "Esilia una creatura su un altro piano." },
+
+            // Level 5
+            { n: "Guarigione Superiore", l: 5, c: ["Bardo", "Chierico", "Druido"], d: "Cura 4d8 + mod a creature multiple." }
+        ];
+
+        // --- DATA: FEATURES DB (Expanded with Subcategories) ---
+        const FEATURE_DB = [
+            // RAZZIALI
+            { n: "Scurovisione", type: "Razziale", req: "Tutti", d: "Vedi al buio entro 18m come se fosse luce fioca." },
+            { n: "Mani Guaritrici", type: "Razziale", req: "Aasimar", d: "Azione: tocchi creatura e cura pari al tuo livello. 1 volta/riposo lungo." },
+            { n: "Resistenza Necrotica", type: "Razziale", req: "Aasimar", d: "Hai resistenza ai danni necrotici." },
+            { n: "Resistenza Infernale", type: "Razziale", req: "Tiefling", d: "Hai resistenza ai danni da fuoco." },
+            { n: "Retaggio Fatato", type: "Razziale", req: "Elfo", d: "Vantaggio ai TS contro charme, immunità al sonno magico." },
+            { n: "Resilienza Nanica", type: "Razziale", req: "Nano", d: "Vantaggio ai TS veleno e resistenza danni veleno." },
+            { n: "Fortunato (Halfling)", type: "Razziale", req: "Halfling", d: "Ritira gli 1 naturali su TxC, abilità e TS." },
+            { n: "Soffio del Drago", type: "Razziale", req: "Dragonide", d: "Cono o linea di danno elementale. TS Dex o Con." },
+            
+            // STILI DI COMBATTIMENTO (Guerriero, Paladino, Ranger)
+            { n: "Stile: Architettura", type: "Classe", req: "Tutti", d: "+2 ai TxC con armi a distanza." },
+            { n: "Stile: Difesa", type: "Classe", req: "Tutti", d: "+1 alla CA quando indossi armatura." },
+            { n: "Stile: Duellare", type: "Classe", req: "Tutti", d: "+2 danni con armi ad una mano se l'altra è libera." },
+            { n: "Stile: Armi Grandi", type: "Classe", req: "Tutti", d: "Ritira 1 o 2 ai danni con armi a due mani." },
+            { n: "Stile: Protezione", type: "Classe", req: "Tutti", d: "Reazione per dare svantaggio a un attacco contro un alleato vicino (richiede scudo)." },
+
+            // METAMAGIA (Stregone)
+            { n: "Metamagia: Accurata", type: "Classe", req: "Stregone", d: "1 PS: I bersagli superano automaticamente il TS (es. Palla di Fuoco sugli amici)." },
+            { n: "Metamagia: Distante", type: "Classe", req: "Stregone", d: "1 PS: Raddoppia la gittata o rendi a contatto 9m." },
+            { n: "Metamagia: Potenziata", type: "Classe", req: "Stregone", d: "1 PS: Ritira dadi danno pari a Carisma." },
+            { n: "Metamagia: Estesa", type: "Classe", req: "Stregone", d: "1 PS: Raddoppia la durata (max 24h)." },
+            { n: "Metamagia: Intensificata", type: "Classe", req: "Stregone", d: "3 PS: Svantaggio al primo TS del bersaglio." },
+            { n: "Metamagia: Rapida", type: "Classe", req: "Stregone", d: "2 PS: Lancia come azione bonus invece che azione." },
+            { n: "Metamagia: Sottile", type: "Classe", req: "Stregone", d: "1 PS: Lancia senza componenti V o S." },
+            { n: "Metamagia: Raddoppiata", type: "Classe", req: "Stregone", d: "PS pari a livello spell: Colpisci un secondo bersaglio." },
+
+            // PATTI (Warlock)
+            { n: "Patto della Lama", type: "Classe", req: "Warlock", d: "Puoi evocare un'arma magica nella tua mano." },
+            { n: "Patto della Catena", type: "Classe", req: "Warlock", d: "Ottieni un famiglio potenziato (Imp, Quasit, ecc)." },
+            { n: "Patto del Tomo", type: "Classe", req: "Warlock", d: "Ottieni un libro delle ombre e 3 trucchetti da qualsiasi lista." },
+
+            // DOMINI (Chierico - Esempi)
+            { n: "Dominio della Vita", type: "Classe", req: "Chierico", d: "Bonus cure: 2 + livello incantesimo." },
+            { n: "Dominio della Guerra", type: "Classe", req: "Chierico", d: "Azione bonus per fare un attacco extra (limitato)." },
+            { n: "Dominio della Luce", type: "Classe", req: "Chierico", d: "Bagliore protettivo per dare svantaggio agli attaccanti." },
+
+            // ALTRI PRIVILEGI DI CLASSE
+            { n: "Ira", type: "Classe", req: "Barbaro", d: "Vantaggio prove Forza, bonus danni, resistenza contundente/tagliente/perforante." },
+            { n: "Difesa Senza Armatura", type: "Classe", req: "Barbaro", d: "CA = 10 + Des + Cos se non indossi armatura." },
+            { n: "Ispirazione Bardica", type: "Classe", req: "Bardo", d: "Bonus Action: dai un d6 (o sup) a un alleato per prove/txc/ts." },
+            { n: "Forma Selvatica", type: "Classe", req: "Druido", d: "Ti trasformi in una bestia." },
+            { n: "Recupero Energie", type: "Classe", req: "Guerriero", d: "Bonus Action: recuperi 1d10 + livello PF." },
+            { n: "Azione Impetuosa", type: "Classe", req: "Guerriero", d: "Fai un'azione extra nel turno." },
+            { n: "Raffica di Colpi", type: "Classe", req: "Monaco", d: "Spendi 1 Ki per 2 colpi disarmati come bonus action." },
+            { n: "Imposizione delle Mani", type: "Classe", req: "Paladino", d: "Pool di cura pari a Livello x 5." },
+            { n: "Punire Divino", type: "Classe", req: "Paladino", d: "Spendi slot per aggiungere 2d8+ danni radiosi." },
+            { n: "Attacco Furtivo", type: "Classe", req: "Ladro", d: "Danni extra se hai vantaggio o alleato vicino." },
+            { n: "Azione Scaltra", type: "Classe", req: "Ladro", d: "Bonus action per Scattare, Disimpegnarsi o Nascondersi." },
+            { n: "Recupero Arcano", type: "Classe", req: "Mago", d: "Recuperi slot incantesimo durante riposo breve." },
+            
+            // TALENTI
+            { n: "Fortunato", type: "Talento", req: "Tutti", d: "3 punti fortuna al giorno per ritirare dadi." },
+            { n: "Tiratore Scelto", type: "Talento", req: "Tutti", d: "Ignora copertura, -5 TxC / +10 Danni a distanza." },
+            { n: "Maestro d'Armi Possenti", type: "Talento", req: "Tutti", d: "Critico/Kill dà attacco extra. -5 TxC / +10 Danni mischia." },
+            { n: "Sentinella", type: "Talento", req: "Tutti", d: "Colpisci chi disimpegna, riduci velocità a 0." },
+            { n: "Osservatore", type: "Talento", req: "Tutti", d: "+5 a Percezione e Indagare passivi." },
+            { n: "Attore", type: "Talento", req: "Tutti", d: "Vantaggio inganno e performance per fingersi altri." },
+            { n: "Iniziato alla Magia", type: "Talento", req: "Tutti", d: "Impari 2 trucchetti e 1 incantesimo di 1° livello." },
+            { n: "Resiliente", type: "Talento", req: "Tutti", d: "+1 a una caratteristica e competenza nei TS." },
+            { n: "Robusto", type: "Talento", req: "Tutti", d: "+2 PF per ogni livello." }
+        ];
+
+        // --- COMPONENTS ---
         class ErrorBoundary extends React.Component {
-            constructor(props) {
-                super(props);
-                this.state = { hasError: false, error: null };
-            }
-
-            static getDerivedStateFromError(error) {
-                return { hasError: true, error };
-            }
-
+            constructor(props) { super(props); this.state = { hasError: false }; }
+            static getDerivedStateFromError(error) { return { hasError: true }; }
             render() {
-                if (this.state.hasError) {
-                    return (
-                        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-red-400 p-8 text-center">
-                            <h1 className="text-3xl font-bold mb-4">Qualcosa è andato storto</h1>
-                            <p className="text-slate-400 mb-4">Si è verificato un errore critico.</p>
-                            <pre className="bg-slate-900 p-4 rounded border border-red-900 text-sm overflow-auto max-w-2xl">
-                                {this.state.error.toString()}
-                            </pre>
-                            <button 
-                                onClick={() => {
-                                    localStorage.clear(); 
-                                    window.location.reload();
-                                }}
-                                className="mt-8 px-6 py-2 bg-red-800 text-white rounded hover:bg-red-700 transition"
-                            >
-                                Reset Totale (Se ricaricare non basta)
-                            </button>
-                            <button 
-                                onClick={() => window.location.reload()}
-                                className="mt-4 px-6 py-2 bg-amber-600 text-white rounded hover:bg-amber-500 transition"
-                            >
-                                Ricarica Pagina
-                            </button>
-                        </div>
-                    );
-                }
+                if (this.state.hasError) return <div className="p-10 text-center text-red-500">Errore critico. Ricarica la pagina.</div>;
                 return this.props.children;
             }
         }
 
-        // --- ICONE INTEGRATE (SVG) ---
-        const IconBase = ({ children, size = 24, className = "", ...props }) => (
-            <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width={size} 
-                height={size} 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className={className} 
-                {...props}
-            >
-                {children}
-            </svg>
+        const IconBase = ({ children, size = 20, className = "", ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>{children}</svg>
         );
 
         const Icons = {
-            Sword: (props) => <IconBase {...props}><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></IconBase>,
-            Shield: (props) => <IconBase {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></IconBase>,
-            Scroll: (props) => <IconBase {...props}><path d="M8 2h2v20H8z"/><path d="M14 2h2v20h-2z"/><path d="M8 2h6"/><path d="M8 22h6"/><path d="M18 2h2a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-2"/><path d="M4 2h2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h2"/></IconBase>,
-            Skull: (props) => <IconBase {...props}><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/></IconBase>,
-            Heart: (props) => <IconBase {...props}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></IconBase>,
-            User: (props) => <IconBase {...props}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconBase>,
-            Save: (props) => <IconBase {...props}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></IconBase>,
-            Trash2: (props) => <IconBase {...props}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></IconBase>,
-            Plus: (props) => <IconBase {...props}><path d="M5 12h14"/><path d="M12 5v14"/></IconBase>,
-            Minus: (props) => <IconBase {...props}><path d="M5 12h14"/></IconBase>,
-            ChevronLeft: (props) => <IconBase {...props}><path d="m15 18-6-6 6-6"/></IconBase>,
-            Dices: (props) => <IconBase {...props}><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></IconBase>,
-            Image: (props) => <IconBase {...props}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></IconBase>,
-            Upload: (props) => <IconBase {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></IconBase>,
-            Download: (props) => <IconBase {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></IconBase>,
-            Wand2: (props) => <IconBase {...props}><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/></IconBase>,
-            BookOpen: (props) => <IconBase {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconBase>,
-            Feather: (props) => <IconBase {...props}><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" x2="2" y1="8" y2="22"/><line x1="17.5" x2="9" y1="15" y2="15"/></IconBase>,
-            Axe: (props) => <IconBase {...props}><path d="m14 12-8.5 8.5a2.12 2.12 0 1 1-3-3L11 9"/><path d="M15 13 9 7l4-4 6 6h3a8 8 0 0 1-7 7z"/></IconBase>,
-            Crosshair: (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></IconBase>,
-            Music: (props) => <IconBase {...props}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></IconBase>,
-            Ghost: (props) => <IconBase {...props}><path d="M9 22v-2c0-1.1.9-2 2-2h2a2 2 0 0 1 2 2v2"/><path d="M9 22c0-1.1-.9-2-2-2H5a2 2 0 0 0-2 2v2"/><path d="M19 22c0-1.1.9-2 2-2h2a2 2 0 0 1 2 2v2"/><path d="M5 2 2 5h20l-3-3"/><path d="M2 5v17c0 1.1.9 2 2 2h16a2 2 0 0 0 2-2V5"/></IconBase>,
-            Hammer: (props) => <IconBase {...props}><path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25V7.86c0-.55-.45-1-1-1H14.14c-.83 0-1.64.32-2.25.92l-1.25 1.25c-.6.6-.93 1.4-.93 2.25V12c0 .55.45 1 1 1h3.58c.83 0 1.64-.32 2.25-.92l.37-.37"/></IconBase>,
-            Backpack: (props) => <IconBase {...props}><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M8 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"/><path d="M8 10h8"/><path d="M9 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"/></IconBase>,
-            Sparkles: (props) => <IconBase {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></IconBase>,
-            Edit: (props) => <IconBase {...props}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></IconBase>,
-            Check: (props) => <IconBase {...props}><polyline points="20 6 9 17 4 12"/></IconBase>,
-            Filter: (props) => <IconBase {...props}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></IconBase>,
-            ArrowDownAZ: (props) => <IconBase {...props}><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M20 8h-5"/><path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10"/><path d="M15 14h5l-5 7h5"/></IconBase>,
-            Zap: (props) => <IconBase {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></IconBase>,
-            Flame: (props) => <IconBase {...props}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.6-3.3.3.9.8 1.6 1.9 2.8z"/></IconBase>,
-            Settings: (props) => <IconBase {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>,
-            Cloud: (props) => <IconBase {...props}><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M17.5 19h2c1.4 0 2.5-1.1 2.5-2.5S20.9 14 19.5 14c-.1 0-.3 0-.4.1"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>,
-            CloudCheck: (props) => <IconBase {...props}><path d="M12 21a6 6 0 0 0 6-6c0-3.3-2.7-6-6-6-.4 0-.8 0-1.2.1"/><path d="M16 16l2 2 4-4"/><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>,
-            CloudOff: (props) => <IconBase {...props}><path d="M2 2l20 20"/><path d="M5.8 5.8a6 6 0 0 1 8.8 0"/><path d="M12 21a6 6 0 0 0 6-6c0-3.3-2.7-6-6-6-.4 0-.8 0-1.2.1"/><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>,
-            LayoutGrid: (props) => <IconBase {...props}><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></IconBase>,
-            LayoutList: (props) => <IconBase {...props}><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><path d="M14 4h7"/><path d="M14 9h7"/><path d="M14 15h7"/><path d="M14 20h7"/></IconBase>
+            Sword: (p) => <IconBase {...p}><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></IconBase>,
+            Shield: (p) => <IconBase {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></IconBase>,
+            Scroll: (p) => <IconBase {...p}><path d="M8 2h2v20H8z"/><path d="M14 2h2v20h-2z"/><path d="M8 2h6"/><path d="M8 22h6"/><path d="M18 2h2a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-2"/><path d="M4 2h2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h2"/></IconBase>,
+            User: (p) => <IconBase {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconBase>,
+            Save: (p) => <IconBase {...p}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></IconBase>,
+            Trash2: (p) => <IconBase {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></IconBase>,
+            Plus: (p) => <IconBase {...p}><path d="M5 12h14"/><path d="M12 5v14"/></IconBase>,
+            Minus: (p) => <IconBase {...p}><path d="M5 12h14"/></IconBase>,
+            ChevronDown: (p) => <IconBase {...p}><path d="m6 9 6 6 6-6"/></IconBase>,
+            ChevronUp: (p) => <IconBase {...p}><path d="m18 15-6-6-6 6"/></IconBase>,
+            ChevronLeft: (p) => <IconBase {...p}><path d="m15 18-6-6 6-6"/></IconBase>,
+            Dices: (p) => <IconBase {...p}><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></IconBase>,
+            Image: (p) => <IconBase {...p}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></IconBase>,
+            Upload: (p) => <IconBase {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></IconBase>,
+            Download: (p) => <IconBase {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></IconBase>,
+            Wand2: (p) => <IconBase {...p}><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/></IconBase>,
+            BookOpen: (p) => <IconBase {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconBase>,
+            Feather: (p) => <IconBase {...p}><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" x2="2" y1="8" y2="22"/><line x1="17.5" x2="9" y1="15" y2="15"/></IconBase>,
+            Axe: (p) => <IconBase {...p}><path d="m14 12-8.5 8.5a2.12 2.12 0 1 1-3-3L11 9"/><path d="M15 13 9 7l4-4 6 6h3a8 8 0 0 1-7 7z"/></IconBase>,
+            Crosshair: (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></IconBase>,
+            Music: (p) => <IconBase {...p}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></IconBase>,
+            Ghost: (p) => <IconBase {...p}><path d="M9 22v-2c0-1.1.9-2 2-2h2a2 2 0 0 1 2 2v2"/><path d="M9 22c0-1.1-.9-2-2-2H5a2 2 0 0 0-2 2v2"/><path d="M19 22c0-1.1.9-2 2-2h2a2 2 0 0 1 2 2v2"/><path d="M5 2 2 5h20l-3-3"/><path d="M2 5v17c0 1.1.9 2 2 2h16a2 2 0 0 0 2-2V5"/></IconBase>,
+            Hammer: (p) => <IconBase {...p}><path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25V7.86c0-.55-.45-1-1-1H14.14c-.83 0-1.64.32-2.25.92l-1.25 1.25c-.6.6-.93 1.4-.93 2.25V12c0 .55.45 1 1 1h3.58c.83 0 1.64-.32 2.25-.92l.37-.37"/></IconBase>,
+            Backpack: (p) => <IconBase {...p}><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M8 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"/><path d="M8 10h8"/><path d="M9 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"/></IconBase>,
+            Sparkles: (p) => <IconBase {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></IconBase>,
+            Edit: (p) => <IconBase {...p}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></IconBase>,
+            Check: (p) => <IconBase {...p}><polyline points="20 6 9 17 4 12"/></IconBase>,
+            Filter: (p) => <IconBase {...p}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></IconBase>,
+            ArrowDownAZ: (p) => <IconBase {...p}><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M20 8h-5"/><path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10"/><path d="M15 14h5l-5 7h5"/></IconBase>,
+            Zap: (p) => <IconBase {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></IconBase>,
+            Flame: (p) => <IconBase {...p}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.6-3.3.3.9.8 1.6 1.9 2.8z"/></IconBase>,
+            Settings: (p) => <IconBase {...p}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1-1-1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>,
+            Cloud: (p) => <IconBase {...p}><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M17.5 19h2c1.4 0 2.5-1.1 2.5-2.5S20.9 14 19.5 14c-.1 0-.3 0-.4.1"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>,
+            CloudCheck: (p) => <IconBase {...p}><path d="M12 21a6 6 0 0 0 6-6c0-3.3-2.7-6-6-6-.4 0-.8 0-1.2.1"/><path d="M16 16l2 2 4-4"/><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>,
+            CloudOff: (p) => <IconBase {...p}><path d="M2 2l20 20"/><path d="M5.8 5.8a6 6 0 0 1 8.8 0"/><path d="M12 21a6 6 0 0 0 6-6c0-3.3-2.7-6-6-6-.4 0-.8 0-1.2.1"/><path d="M17.5 19c0-1.7-1.3-3-3-3h-1.1c-.1-2.9-2.4-5.2-5.3-5.3-2.7 0-5 2-5.4 4.7-.2 1.3.2 2.6.9 3.6"/><path d="M3.4 17.6c-.9-.6-1.4-1.6-1.4-2.6 0-2.2 1.8-4 4-4 .4 0 .7 0 1 .1"/></IconBase>,
+            LayoutGrid: (p) => <IconBase {...p}><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></IconBase>,
+            LayoutList: (p) => <IconBase {...p}><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><path d="M14 4h7"/><path d="M14 9h7"/><path d="M14 15h7"/><path d="M14 20h7"/></IconBase>,
+            Star: (p) => <IconBase {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></IconBase>,
+            ChevronDown: (p) => <IconBase {...p}><path d="m6 9 6 6 6-6"/></IconBase>,
+            ChevronUp: (p) => <IconBase {...p}><path d="m18 15-6-6-6 6"/></IconBase>,
+            ChevronLeft: (p) => <IconBase {...p}><path d="m15 18-6-6 6-6"/></IconBase>,
+            Skull: (p) => <IconBase {...p}><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/></IconBase>,
+            Heart: (p) => <IconBase {...p}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></IconBase>,
+            Save: (p) => <IconBase {...p}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></IconBase>
         };
 
         const { 
-            Sword, Shield, Scroll, Skull, Heart, User, 
-            Save, Trash2, Plus, Minus, ChevronLeft, Dices, 
-            Image: ImageIcon, Upload, Download, Wand2, BookOpen,
-            Feather, Axe, Crosshair, Music, Ghost, Hammer,
-            Backpack, Sparkles, Edit, Check, Filter, ArrowDownAZ, Zap, Flame,
-            Settings, Cloud, CloudCheck, CloudOff,
-            LayoutGrid, LayoutList
+            Sword, Shield, Scroll, Skull, Heart, User, Save, Trash2, Plus, Minus, ChevronLeft, ChevronDown, ChevronUp, Dices, 
+            Image: ImageIcon, Upload, Download, Wand2, BookOpen, Feather, Axe, Crosshair, Music, Ghost, Hammer,
+            Backpack, Sparkles, Edit, Check, Settings, Cloud, CloudCheck, CloudOff, LayoutGrid, LayoutList, Star, Flame, Zap, Filter, ArrowDownAZ
         } = Icons;
 
-        // --- SETUP INIZIALE ---
         const { useState, useEffect, useRef, useCallback } = React;
 
-        // --- COSTANTI E DATI DI GIOCO ---
         const CLASSES = [
             { name: 'Barbaro', icon: Axe, defaultColor: 'text-red-500' },
             { name: 'Bardo', icon: Music, defaultColor: 'text-pink-500' },
@@ -209,20 +270,14 @@
             return mod >= 0 ? `+${mod}` : mod;
         };
 
-        // --- COMPONENTI UI ---
-        const Button = ({ children, onClick, variant = 'primary', className = '', type = 'button', title = '' }) => {
-            const baseStyle = "px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 whitespace-nowrap";
+        const Button = ({ children, onClick, variant = 'primary', className = '', type = 'button' }) => {
             const variants = {
                 primary: "bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20",
                 secondary: "bg-slate-700 hover:bg-slate-600 text-slate-200",
                 danger: "bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800",
                 ghost: "bg-transparent hover:bg-slate-800 text-slate-400 hover:text-white"
             };
-            return (
-                <button type={type} onClick={onClick} className={`${baseStyle} ${variants[variant]} ${className}`} title={title}>
-                    {children}
-                </button>
-            );
+            return <button type={type} onClick={onClick} className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${variants[variant]} ${className}`}>{children}</button>;
         };
 
         const Input = ({ label, value, onChange, type = "text", placeholder = "", textarea = false, className = "" }) => (
@@ -257,7 +312,7 @@
                         const val = parseInt(e.target.value);
                         onChange(isNaN(val) ? 10 : val);
                     }}
-                    className="w-12 text-center bg-transparent text-xl font-bold text-slate-100 outline-none appearance-none"
+                    className="w-12 text-center bg-transparent text-xl font-bold text-slate-100 outline-none appearance-none no-spinner"
                 />
                 <div className="mt-1 w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 border border-slate-600 text-sm font-bold text-amber-500">
                     {getModifier(value)}
@@ -265,7 +320,27 @@
             </div>
         );
 
-        // --- COMPONENTI PRINCIPALI ---
+        const DynamicCounter = ({ label, current, max, onChangeCurrent, onChangeMax, color = "text-slate-200", icon: Icon }) => {
+            return (
+                <div className="bg-slate-900 p-4 rounded-xl border border-slate-700 flex flex-col justify-between h-full relative overflow-hidden group">
+                    <div className={`flex items-center gap-2 font-bold mb-2 uppercase text-xs tracking-widest ${color} opacity-80`}>
+                        {Icon && <Icon size={16} />} {label}
+                    </div>
+                    <div className="flex items-end justify-between z-10">
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => onChangeCurrent(Math.max(0, current - 1))} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"><Minus size={16}/></button>
+                            <span className={`text-4xl font-black ${color} tracking-tight`}>{current}</span>
+                            <button onClick={() => onChangeCurrent(current + 1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"><Plus size={16}/></button>
+                        </div>
+                        <div className="flex flex-col items-end mb-1">
+                            <span className="text-[10px] text-slate-500 font-bold uppercase">Massimo</span>
+                            <input type="number" className="w-12 text-right bg-transparent text-lg font-bold text-slate-500 outline-none focus:text-slate-300 no-spinner" value={max} onChange={(e) => onChangeMax(parseInt(e.target.value) || 0)} />
+                        </div>
+                    </div>
+                    <div className={`absolute -right-4 -bottom-4 opacity-5 ${color}`}>{Icon && <Icon size={80} />}</div>
+                </div>
+            );
+        };
 
         const InventoryItem = ({ item, onDelete, onUpdate }) => {
             const [isEditing, setIsEditing] = useState(false);
@@ -355,44 +430,37 @@
 
         const SpellItem = ({ spell, onDelete, onUpdate }) => {
             const [isEditing, setIsEditing] = useState(false);
-            const [editData, setEditData] = useState({ name: spell.name, level: spell.level });
-
-            const handleSave = () => {
-                onUpdate(spell.id, editData);
-                setIsEditing(false);
-            };
-
+            const [isExpanded, setIsExpanded] = useState(false);
+            const [editData, setEditData] = useState({ name: spell.name, level: spell.level, desc: spell.desc || "" });
+            const handleSave = () => { onUpdate(spell.id, editData); setIsEditing(false); };
             return (
-                <div className="bg-slate-800 p-3 rounded border border-slate-700 flex justify-between items-center group">
-                    {isEditing ? (
-                        <div className="flex gap-2 items-center flex-1">
-                            <input 
-                                type="text" 
-                                value={editData.name} 
-                                onChange={(e) => setEditData({...editData, name: e.target.value})}
-                                className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white outline-none focus:border-purple-500 flex-1"
-                            />
-                            <select 
-                                value={editData.level} 
-                                onChange={(e) => setEditData({...editData, level: parseInt(e.target.value)})}
-                                className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-slate-300 outline-none w-20"
-                            >
-                                <option value={0}>Cantrip</option>
-                                {[1,2,3,4,5,6,7,8,9].map(l => <option key={l} value={l}>Lv {l}</option>)}
-                            </select>
-                            <button onClick={handleSave} className="text-green-400 hover:text-green-300"><Check size={16}/></button>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <Sparkles size={14} className={spell.level === 0 ? "text-slate-400" : "text-purple-500"}/>
-                            <span className="text-slate-200 font-medium">{spell.name}</span>
-                        </div>
-                    )}
-                    
-                    {!isEditing && (
-                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                            <button onClick={() => setIsEditing(true)} className="text-slate-500 hover:text-amber-500"><Edit size={14}/></button>
-                            <button onClick={() => onDelete(spell.id)} className="text-slate-600 hover:text-red-400"><Trash2 size={14}/></button>
+                <div className="bg-slate-800 rounded border border-slate-700 overflow-hidden group hover:border-purple-500/50 transition-colors">
+                    <div className="p-3 flex justify-between items-center cursor-pointer" onClick={() => !isEditing && setIsExpanded(!isExpanded)}>
+                        {isEditing ? (
+                            <div className="flex gap-2 items-center flex-1" onClick={e => e.stopPropagation()}>
+                                <input type="text" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white flex-1" />
+                                <button onClick={handleSave} className="text-green-400"><Check size={16}/></button>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <div className="text-slate-500">{isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</div>
+                                <span className={`text-sm font-medium ${spell.level === 0 ? "text-slate-300" : "text-purple-300"}`}>{spell.name}</span>
+                            </div>
+                        )}
+                        {!isEditing && (
+                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                <button onClick={(e) => {e.stopPropagation(); setIsEditing(true)}} className="text-slate-500 hover:text-amber-500"><Edit size={14}/></button>
+                                <button onClick={(e) => {e.stopPropagation(); onDelete(spell.id)}} className="text-slate-600 hover:text-red-400"><Trash2 size={14}/></button>
+                            </div>
+                        )}
+                    </div>
+                    {isExpanded && (
+                        <div className="px-3 pb-3 pt-0 border-t border-slate-700/50 bg-slate-800/50">
+                            {isEditing ? (
+                                <textarea value={editData.desc} onChange={e => setEditData({...editData, desc: e.target.value})} className="w-full bg-slate-900 text-xs text-slate-300 p-2 mt-2 rounded border border-slate-600" />
+                            ) : (
+                                <p className="text-xs text-slate-400 mt-2 italic leading-relaxed">{spell.desc || "Nessuna descrizione."}</p>
+                            )}
                         </div>
                     )}
                 </div>
@@ -401,80 +469,20 @@
 
         const CharacterCard = ({ character, onEdit, onDelete, viewMode }) => {
             const ClassIconObj = CLASSES.find(c => c.name === character.class)?.icon || User;
-            
-            // Layout a Lista (Compatta Orizzontale)
             if (viewMode === 'list') {
                 return (
                     <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden hover:shadow-xl hover:border-amber-500/30 transition-all duration-300 flex items-stretch">
-                        <div className="w-24 bg-slate-900 relative shrink-0">
-                            {character.imageUrl ? (
-                                <img src={character.imageUrl} alt={character.name} className="w-full h-full object-cover opacity-80" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <ClassIconObj size={32} className="text-slate-700" />
-                                </div>
-                            )}
-                        </div>
-                        <div className="p-4 flex-1 flex flex-col justify-center">
-                            <h3 className="text-lg font-bold text-white truncate">{character.name || "Senza Nome"}</h3>
-                            <p className="text-xs text-amber-400 font-medium mb-2">{character.race} {character.class} (Lv. {character.level})</p>
-                            <div className="flex gap-4 text-xs text-slate-400">
-                                <div><span className="font-bold text-slate-200">{character.hpMax}</span> HP</div>
-                                <div><span className="font-bold text-slate-200">{character.ac}</span> CA</div>
-                            </div>
-                        </div>
-                        <div className="flex flex-col border-l border-slate-700">
-                            <button onClick={() => onEdit(character)} className="flex-1 px-4 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">
-                                <Edit size={18} />
-                            </button>
-                            <button onClick={() => onDelete(character.id)} className="flex-1 px-4 hover:bg-red-900/30 text-slate-400 hover:text-red-400 transition-colors border-t border-slate-700">
-                                <Trash2 size={18} />
-                            </button>
-                        </div>
+                        <div className="w-24 bg-slate-900 relative shrink-0">{character.imageUrl ? <img src={character.imageUrl} alt={character.name} className="w-full h-full object-cover opacity-80" /> : <div className="w-full h-full flex items-center justify-center"><ClassIconObj size={32} className="text-slate-700" /></div>}</div>
+                        <div className="p-4 flex-1 flex flex-col justify-center"><h3 className="text-lg font-bold text-white truncate">{character.name || "Senza Nome"}</h3><p className="text-xs text-amber-400 font-medium mb-2">{character.race} {character.class} (Lv. {character.level})</p><div className="flex gap-4 text-xs text-slate-400"><div><span className="font-bold text-slate-200">{character.hpCurrent}/{character.hpMax}</span> HP</div><div><span className="font-bold text-slate-200">{character.ac}</span> CA</div></div></div>
+                        <div className="flex flex-col border-l border-slate-700"><button onClick={() => onEdit(character)} className="flex-1 px-4 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"><Edit size={18} /></button><button onClick={() => onDelete(character.id)} className="flex-1 px-4 hover:bg-red-900/30 text-slate-400 hover:text-red-400 transition-colors border-t border-slate-700"><Trash2 size={18} /></button></div>
                     </div>
                 );
             }
-
-            // Layout a Galleria (Card Verticale)
             return (
                 <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden hover:shadow-xl hover:shadow-amber-900/10 hover:border-amber-500/30 transition-all duration-300 group">
-                    <div className="h-48 w-full bg-slate-900 relative overflow-hidden">
-                        {character.imageUrl ? (
-                            <img src={character.imageUrl} alt={character.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-slate-900">
-                                <ClassIconObj size={64} className="text-slate-700 group-hover:text-amber-600 transition-colors" />
-                            </div>
-                        )}
-                        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-900 to-transparent p-4 pt-12">
-                            <h3 className="text-xl font-bold text-white truncate">{character.name || "Senza Nome"}</h3>
-                            <p className="text-sm text-amber-400 font-medium">{character.race} {character.class} (Lv. {character.level})</p>
-                        </div>
-                    </div>
-
-                    <div className="p-4 grid grid-cols-3 gap-2 border-b border-slate-700/50">
-                        <div className="text-center">
-                            <div className="text-xs text-slate-500">HP</div>
-                            <div className="text-slate-200 font-bold">{character.hpMax}</div>
-                        </div>
-                        <div className="text-center border-l border-slate-700">
-                            <div className="text-xs text-slate-500">CA</div>
-                            <div className="text-slate-200 font-bold">{character.ac}</div>
-                        </div>
-                        <div className="text-center border-l border-slate-700">
-                            <div className="text-xs text-slate-500">Iniz</div>
-                            <div className="text-slate-200 font-bold">{getModifier(character.stats.Destrezza)}</div>
-                        </div>
-                    </div>
-
-                    <div className="p-3 flex justify-between bg-slate-800">
-                        <Button variant="ghost" onClick={() => onDelete(character.id)} className="text-xs text-red-400 hover:text-red-300">
-                            <Trash2 size={16} /> Elimina
-                        </Button>
-                        <Button variant="secondary" onClick={() => onEdit(character)} className="text-xs">
-                            Apri Scheda
-                        </Button>
-                    </div>
+                    <div className="h-48 w-full bg-slate-900 relative overflow-hidden">{character.imageUrl ? <img src={character.imageUrl} alt={character.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" /> : <div className="w-full h-full flex items-center justify-center bg-slate-900"><ClassIconObj size={64} className="text-slate-700 group-hover:text-amber-600 transition-colors" /></div>}<div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-900 to-transparent p-4 pt-12"><h3 className="text-xl font-bold text-white truncate">{character.name || "Senza Nome"}</h3><p className="text-sm text-amber-400 font-medium">{character.race} {character.class} (Lv. {character.level})</p></div></div>
+                    <div className="p-4 grid grid-cols-3 gap-2 border-b border-slate-700/50"><div className="text-center"><div className="text-xs text-slate-500">HP</div><div className="text-slate-200 font-bold">{character.hpCurrent}/{character.hpMax}</div></div><div className="text-center border-l border-slate-700"><div className="text-xs text-slate-500">CA</div><div className="text-slate-200 font-bold">{character.ac}</div></div><div className="text-center border-l border-slate-700"><div className="text-xs text-slate-500">Iniz</div><div className="text-slate-200 font-bold">{getModifier(character.stats.Destrezza)}</div></div></div>
+                    <div className="p-3 flex justify-between bg-slate-800"><Button variant="ghost" onClick={() => onDelete(character.id)} className="text-xs text-red-400 hover:text-red-300"><Trash2 size={16} /> Elimina</Button><Button variant="secondary" onClick={() => onEdit(character)} className="text-xs">Apri Scheda</Button></div>
                 </div>
             );
         };
@@ -514,197 +522,109 @@
         const SettingsModal = ({ isOpen, onClose, onSave }) => {
             const [configJson, setConfigJson] = useState('');
             const [syncId, setSyncId] = useState('');
-
             useEffect(() => {
                 const savedConfig = localStorage.getItem('dnd-firebase-config');
                 const savedId = localStorage.getItem('dnd-sync-id');
                 if (savedConfig) setConfigJson(savedConfig);
                 if (savedId) setSyncId(savedId);
             }, [isOpen]);
-
             if (!isOpen) return null;
-
             const handleSaveSettings = () => {
                 try {
                     let clean = configJson.trim();
                     clean = clean.replace(/^(const|var|let)\s+\w+\s*=\s*/, '').replace(/;$/, '');
-                    
                     const firstBrace = clean.indexOf('{');
                     const lastBrace = clean.lastIndexOf('}');
-                    if (firstBrace !== -1 && lastBrace !== -1) {
-                        clean = clean.substring(firstBrace, lastBrace + 1);
-                    }
-
+                    if (firstBrace !== -1 && lastBrace !== -1) clean = clean.substring(firstBrace, lastBrace + 1);
                     JSON.parse(clean);
-                    
                     localStorage.setItem('dnd-firebase-config', clean);
                     localStorage.setItem('dnd-sync-id', syncId);
-                    onSave();
-                    onClose();
-                } catch (e) {
-                    alert("Il JSON di configurazione non sembra valido. Assicurati di copiare solo l'oggetto tra parentesi graffe { ... }");
-                }
+                    onSave(); onClose();
+                } catch (e) { alert("JSON non valido."); }
             };
-
             return (
                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
                     <div className="bg-slate-900 border border-slate-700 p-6 rounded-xl w-full max-w-lg shadow-2xl">
-                        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                            <Settings size={24} className="text-amber-500"/> Impostazioni Cloud
-                        </h2>
-                        
+                        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Settings size={24} className="text-amber-500"/> Impostazioni Cloud</h2>
                         <div className="mb-4">
-                            <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
-                                ID Sincronizzazione
-                            </label>
-                            <input 
-                                type="text" 
-                                value={syncId}
-                                onChange={(e) => setSyncId(e.target.value)}
-                                placeholder="es. mario-rossi-dnd-2024"
-                                className="w-full bg-slate-800 border border-slate-600 rounded p-2 text-white outline-none focus:border-amber-500"
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Identificativo univoco per i tuoi dati. Usalo uguale su tutti i dispositivi.</p>
+                            <label className="block text-xs font-bold text-slate-400 uppercase mb-2">ID Sincronizzazione</label>
+                            <input type="text" value={syncId} onChange={(e) => setSyncId(e.target.value)} placeholder="es. mario-rossi-dnd-2024" className="w-full bg-slate-800 border border-slate-600 rounded p-2 text-white outline-none focus:border-amber-500" />
                         </div>
-
                         <div className="mb-6">
-                            <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
-                                Configurazione Firebase (JSON)
-                            </label>
-                            <textarea 
-                                value={configJson}
-                                onChange={(e) => setConfigJson(e.target.value)}
-                                placeholder='Incolla qui il codice da Firebase...'
-                                className="w-full bg-slate-800 border border-slate-600 rounded p-2 text-xs text-slate-300 h-32 font-mono outline-none focus:border-amber-500"
-                            />
-                            <p className="text-xs text-slate-500 mt-1">Copia l'oggetto <code>config</code> dalla console Firebase.</p>
+                            <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Configurazione Firebase (JSON)</label>
+                            <textarea value={configJson} onChange={(e) => setConfigJson(e.target.value)} placeholder='Incolla qui il codice da Firebase...' className="w-full bg-slate-800 border border-slate-600 rounded p-2 text-xs text-slate-300 h-32 font-mono outline-none focus:border-amber-500" />
                         </div>
-
-                        <div className="flex justify-end gap-3">
-                            <Button onClick={onClose} variant="secondary">Annulla</Button>
-                            <Button onClick={handleSaveSettings} variant="primary">Salva e Connetti</Button>
-                        </div>
+                        <div className="flex justify-end gap-3"><Button onClick={onClose} variant="secondary">Annulla</Button><Button onClick={handleSaveSettings} variant="primary">Salva e Connetti</Button></div>
                     </div>
                 </div>
             );
         };
 
         const CharacterEditor = ({ initialData, onSave, onCancel }) => {
-            // ... (rest of editor code is same, omitted for brevity, logic handled in parent App mostly)
             const [char, setChar] = useState(initialData || {
-                id: Date.now(),
-                name: '',
-                race: 'Umano',
-                class: 'Guerriero',
-                level: 1,
-                xp: 0,
-                alignment: 'Vero Neutrale',
-                imageUrl: '',
-                hpMax: 10,
-                ac: 10,
-                stats: { Forza: 10, Destrezza: 10, Costituzione: 10, Intelligenza: 10, Saggezza: 10, Carisma: 10 },
-                backstory: '',
-                personality: '',
-                notes: '',
-                resistances: '',
-                money: { cp: 0, sp: 0, gp: 0 },
-                inventory: [],
-                spells: [],
-                spellSlots: {},
-                resources: { sorcery: {current: 0, max: 0}, magic: {current: 0, max: 0} }
+                id: Date.now(), name: '', race: 'Umano', class: 'Guerriero', level: 1, xp: 0, alignment: 'Vero Neutrale', imageUrl: '',
+                hpMax: 10, hpCurrent: 10, ac: 10, stats: { Forza: 10, Destrezza: 10, Costituzione: 10, Intelligenza: 10, Saggezza: 10, Carisma: 10 },
+                money: { cp: 0, sp: 0, gp: 0 }, inventory: [], spells: [], spellSlots: {}, resources: { sorcery: {current: 0, max: 0}, magic: {current: 0, max: 0} }, abilities: []
             });
+            const [activeTab, setActiveTab] = useState('core');
+            const [newSpellLvl, setNewSpellLvl] = useState(0);
+            const [selSpell, setSelSpell] = useState('');
+            const [spellName, setSpellName] = useState('');
+            const [featType, setFeatType] = useState('Classe');
+            const [selFeat, setSelFeat] = useState('');
+            const [featName, setFeatName] = useState('');
+            const [featDesc, setFeatDesc] = useState('');
+            const [newItem, setNewItem] = useState({ name: '', type: 'Generico', qty: 1 });
+            const fileInputRef = useRef(null);
 
-            // Stati per filtri inventario
+            // Filtro Inventario
             const [invFilter, setInvFilter] = useState('Tutti');
             const [invSort, setInvSort] = useState('Nome');
 
             useEffect(() => {
-                if (!char.money) setChar(c => ({...c, money: { cp: 0, sp: 0, gp: 0 }}));
-                if (!char.inventory) setChar(c => ({...c, inventory: []}));
-                if (!char.spells) setChar(c => ({...c, spells: []}));
-                if (!char.spellSlots) setChar(c => ({...c, spellSlots: {} }));
-                if (!char.resources) setChar(c => ({...c, resources: { sorcery: {current: 0, max: 0}, magic: {current: 0, max: 0} } }));
-                if (!char.resistances) setChar(c => ({...c, resistances: '' }));
+                setChar(prev => ({ ...prev, hpCurrent: prev.hpCurrent !== undefined ? prev.hpCurrent : prev.hpMax, abilities: prev.abilities || [] }));
             }, []);
 
-            const [activeTab, setActiveTab] = useState('core');
-            const fileInputRef = useRef(null);
+            const addSpell = () => {
+                let s = { id: Date.now(), level: newSpellLvl, name: spellName, desc: "" };
+                const dbSpell = SPELL_DB.find(x => x.n === selSpell);
+                if (dbSpell) { s.name = dbSpell.n; s.desc = dbSpell.d; }
+                if(!s.name) return;
+                setChar(prev => ({...prev, spells: [...prev.spells, s]}));
+                setSpellName(''); setSelSpell('');
+            };
 
-            const [newItem, setNewItem] = useState({ name: '', type: 'Generico', qty: 1 });
-            const [newSpell, setNewSpell] = useState({ name: '', level: 0 });
-
-            const handleStatChange = (stat, value) => {
-                setChar(prev => ({
-                    ...prev,
-                    stats: { ...prev.stats, [stat]: value }
-                }));
+            const addFeat = () => {
+                let f = { id: Date.now(), source: featType, name: featName, desc: featDesc };
+                if(!f.name) return;
+                setChar(prev => ({...prev, abilities: [...prev.abilities || [], f]}));
+                setFeatName(''); setFeatDesc(''); setSelFeat('');
             };
 
             const handleImageUpload = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-
-                if (file.size > 5 * 1024 * 1024) {
-                    alert("Il file è troppo grande. Scegli un'immagine sotto i 5MB.");
-                    return;
-                }
-
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        const MAX_WIDTH = 400;
-                        const MAX_HEIGHT = 400;
-
-                        if (width > height) {
-                            if (width > MAX_WIDTH) {
-                                height *= MAX_WIDTH / width;
-                                width = MAX_WIDTH;
-                            }
-                        } else {
-                            if (height > MAX_HEIGHT) {
-                                width *= MAX_HEIGHT / height;
-                                height = MAX_HEIGHT;
-                            }
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
+                        let width = img.width, height = img.height;
+                        if (width > height) { if (width > 400) { height *= 400 / width; width = 400; } } else { if (height > 400) { width *= 400 / height; height = 400; } }
+                        canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                        setChar(prev => ({ ...prev, imageUrl: dataUrl }));
+                        setChar(prev => ({ ...prev, imageUrl: canvas.toDataURL('image/jpeg', 0.7) }));
                     }
                     img.src = event.target.result;
                 }
                 reader.readAsDataURL(file);
             };
 
-            const handleNumberChange = (field, value) => {
-                const intVal = parseInt(value);
-                setChar(prev => ({
-                    ...prev,
-                    [field]: isNaN(intVal) ? 0 : intVal
-                }));
-            };
-
             const addItem = () => {
                 if (!newItem.name) return;
-                setChar(prev => ({
-                    ...prev,
-                    inventory: [...(prev.inventory || []), { ...newItem, id: Date.now() }]
-                }));
+                setChar(prev => ({ ...prev, inventory: [...(prev.inventory || []), { ...newItem, id: Date.now() }] }));
                 setNewItem({ name: '', type: 'Generico', qty: 1 });
-            };
-
-            const removeItem = (id) => {
-                setChar(prev => ({
-                    ...prev,
-                    inventory: prev.inventory.filter(i => i.id !== id)
-                }));
             };
 
             const updateItem = (id, updates) => {
@@ -714,29 +634,15 @@
                 }));
             };
 
-            const addSpell = () => {
-                if (!newSpell.name) return;
-                setChar(prev => ({
-                    ...prev,
-                    spells: [...(prev.spells || []), { ...newSpell, id: Date.now() }]
-                }));
-                setNewSpell({ name: '', level: 0 });
-            };
+            const filteredSpells = SPELL_DB.filter(s => s.l === newSpellLvl && (s.c.includes(char.class) || char.class === 'Bardo'));
+            const filteredFeats = FEATURE_DB.filter(f => {
+                if (featType === 'Razza') return f.type === 'Razziale' && (f.req === char.race || f.req === 'Tutti');
+                if (featType === 'Classe') return f.type === 'Classe' && (f.req === char.class || f.req === 'Tutti');
+                if (featType === 'Talento') return f.type === 'Talento';
+                return f.type === featType; 
+            });
 
-            const removeSpell = (id) => {
-                setChar(prev => ({
-                    ...prev,
-                    spells: prev.spells.filter(s => s.id !== id)
-                }));
-            };
-
-            const updateSpell = (id, updates) => {
-                setChar(prev => ({
-                    ...prev,
-                    spells: prev.spells.map(s => s.id === id ? { ...s, ...updates } : s)
-                }));
-            };
-
+            // Logic for Inventory Filtering
             const getFilteredInventory = () => {
                 let items = char.inventory || [];
                 if (invFilter !== 'Tutti') {
@@ -755,193 +661,79 @@
                     return 0;
                 });
             };
+            const filteredInventory = getFilteredInventory();
 
-            const filteredItems = getFilteredInventory();
-
-            const handleSlotChange = (level, type, val) => {
-                const safeVal = Math.max(0, parseInt(val) || 0);
-                setChar(prev => ({
-                    ...prev,
-                    spellSlots: {
-                        ...prev.spellSlots,
-                        [level]: { ...(prev.spellSlots[level] || {}), [type]: safeVal }
-                    }
-                }));
-            };
-
-            const handleResourceChange = (res, type, val) => {
-                const safeVal = Math.max(0, parseInt(val) || 0);
-                setChar(prev => ({
-                    ...prev,
-                    resources: {
-                        ...prev.resources,
-                        [res]: { ...(prev.resources[res] || {}), [type]: safeVal }
-                    }
-                }));
-            };
-            
             return (
                 <div className="animate-fade-in w-full max-w-4xl mx-auto pb-24">
                     <div className="flex items-center justify-between mb-6 sticky top-0 bg-slate-900/95 backdrop-blur z-20 py-4 border-b border-slate-800">
-                        <div className="flex items-center gap-4">
-                            <Button variant="ghost" onClick={onCancel}><ChevronLeft size={20} /> Indietro</Button>
-                            <h2 className="text-2xl font-bold text-slate-100 hidden md:block">
-                                {initialData ? 'Modifica Personaggio' : 'Nuovo Personaggio'}
-                            </h2>
-                        </div>
-                        <Button onClick={() => onSave(char)} variant="primary"><Save size={18} /> Salva Personaggio</Button>
+                        <div className="flex items-center gap-4"><Button variant="ghost" onClick={onCancel}><ChevronLeft size={20} /> Indietro</Button><h2 className="text-2xl font-bold text-slate-100 hidden md:block">{initialData ? 'Modifica' : 'Nuovo'}</h2></div>
+                        <Button onClick={() => onSave(char)} variant="primary"><Save size={18} /> Salva</Button>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                        <div className="md:col-span-4 flex flex-col gap-6">
-                            {/* ... SIDEBAR CONTENT ... */}
-                            <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                                <div className="aspect-square bg-slate-900 rounded-lg overflow-hidden relative mb-4 border-2 border-dashed border-slate-700 hover:border-amber-500/50 transition-colors group">
+                        <div className="md:col-span-3 flex md:flex-col gap-2 bg-slate-800 p-2 rounded-xl overflow-x-auto no-scrollbar">
+                            {[{ id: 'core', label: 'Dati', icon: User }, { id: 'stats', label: 'Stats', icon: Shield }, { id: 'inventory', label: 'Zaino', icon: Backpack }, { id: 'magic', label: 'Magia', icon: Sparkles }, { id: 'abilities', label: 'Talenti', icon: Star }, { id: 'story', label: 'Bio', icon: Scroll }].map(tab => (
+                                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all md:w-full text-left whitespace-nowrap ${activeTab === tab.id ? 'bg-amber-600/20 text-amber-400 border border-amber-600/30' : 'text-slate-400 hover:bg-slate-700'}`}><tab.icon size={18} /> {tab.label}</button>
+                            ))}
+                        </div>
+                        <div className="md:col-span-9 bg-slate-800 p-6 rounded-xl border border-slate-700 min-h-[500px]">
+                            {/* NEW: IMAGE LEFT/TOP PLACEMENT FOR ALL TABS */}
+                            <div className="mb-6 flex flex-col md:flex-row gap-6 items-center md:items-start bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                                <div className="w-32 h-32 bg-slate-800 rounded-full border-2 border-slate-600 overflow-hidden relative group shrink-0">
                                     {char.imageUrl ? (
-                                        <img src={char.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                                        <img src={char.imageUrl} alt="Avatar" className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
-                                            <ImageIcon size={48} className="mb-2"/>
-                                            <span className="text-xs">Nessuna Immagine</span>
+                                        <div className="w-full h-full flex items-center justify-center text-slate-600">
+                                            <ImageIcon size={40} />
                                         </div>
                                     )}
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-opacity">
-                                        <input 
-                                            type="text" 
-                                            placeholder="Incolla URL Immagine..."
-                                            className="w-3/4 bg-slate-800 text-xs p-2 rounded border border-slate-600 text-white"
-                                            onChange={(e) => setChar({...char, imageUrl: e.target.value})}
-                                        />
-                                        <span className="text-xs text-slate-400">oppure</span>
-                                        <Button variant="secondary" className="text-xs py-1" onClick={() => fileInputRef.current.click()}>
-                                            <Upload size={14} /> Carica File
-                                        </Button>
-                                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity" onClick={() => fileInputRef.current.click()}>
+                                        <Upload size={24} className="text-white"/>
+                                    </div>
+                                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                </div>
+                                <div className="text-center md:text-left flex-1">
+                                    <h2 className="text-3xl font-bold text-white mb-1">{char.name || "Nuovo Eroe"}</h2>
+                                    <div className="flex flex-wrap gap-2 justify-center md:justify-start text-sm font-medium text-amber-500">
+                                        <span className="bg-slate-800 px-2 py-1 rounded border border-slate-700">{char.race}</span>
+                                        <span className="bg-slate-800 px-2 py-1 rounded border border-slate-700">{char.class}</span>
+                                        <span className="bg-slate-800 px-2 py-1 rounded border border-slate-700">Lv. {char.level}</span>
                                     </div>
                                 </div>
-                                <div className="text-center">
-                                    <h3 className="text-xl font-bold text-white">{char.name || "..."}</h3>
-                                    <p className="text-amber-500">{char.race} {char.class} Lv.{char.level}</p>
-                                </div>
                             </div>
 
-                            <div className="flex md:flex-col gap-2 bg-slate-800 p-2 rounded-xl">
-                                {[
-                                    { id: 'core', label: 'Dati Essenziali', icon: User },
-                                    { id: 'stats', label: 'Statistiche & Combattimento', icon: Shield },
-                                    { id: 'inventory', label: 'Inventario', icon: Backpack },
-                                    { id: 'magic', label: 'Grimorio', icon: Sparkles },
-                                    { id: 'story', label: 'Narrativa & Backstory', icon: Scroll }
-                                ].map(tab => {
-                                    const Icon = tab.icon;
-                                    return (
-                                        <button
-                                            key={tab.id}
-                                            onClick={() => setActiveTab(tab.id)}
-                                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all flex-1 md:flex-none text-left
-                                                ${activeTab === tab.id 
-                                                    ? 'bg-amber-600/20 text-amber-400 border border-amber-600/30' 
-                                                    : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}
-                                        >
-                                            <Icon size={18} />
-                                            <span className="hidden md:inline">{tab.label}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        <div className="md:col-span-8 bg-slate-800 p-6 rounded-xl border border-slate-700 min-h-[500px]">
                             {activeTab === 'core' && (
-                                <div className="space-y-6 animate-fade-in">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <Input label="Nome Personaggio" value={char.name} onChange={e => setChar({...char, name: e.target.value})} placeholder="Es. Grog Strongjaw" />
-                                        <div className="mb-4">
-                                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Classe</label>
-                                            <select 
-                                                value={char.class} 
-                                                onChange={e => setChar({...char, class: e.target.value})}
-                                                className="w-full bg-slate-950 border border-slate-700 rounded-md p-2 text-slate-200 focus:border-amber-500 outline-none"
-                                            >
-                                                {CLASSES.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Razza</label>
-                                            <select 
-                                                value={char.race} 
-                                                onChange={e => setChar({...char, race: e.target.value})}
-                                                className="w-full bg-slate-950 border border-slate-700 rounded-md p-2 text-slate-200 focus:border-amber-500 outline-none"
-                                            >
-                                                {RACES.map(r => <option key={r} value={r}>{r}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Allineamento</label>
-                                            <select 
-                                                value={char.alignment} 
-                                                onChange={e => setChar({...char, alignment: e.target.value})}
-                                                className="w-full bg-slate-950 border border-slate-700 rounded-md p-2 text-slate-200 focus:border-amber-500 outline-none"
-                                            >
-                                                {ALIGNMENTS.map(a => <option key={a} value={a}>{a}</option>)}
-                                            </select>
-                                        </div>
-                                        <Input label="Livello" type="number" value={char.level} onChange={e => handleNumberChange('level', e.target.value)} />
-                                        <Input label="Esperienza (XP)" value={char.xp || 0} onChange={e => setChar({...char, xp: e.target.value})} />
+                                <div className="space-y-4">
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <Input label="NOME" value={char.name} onChange={e=>setChar({...char, name: e.target.value})} />
+                                        <div className="mb-4"><label className="block text-xs font-bold text-slate-400 mb-1">CLASSE</label><select value={char.class} onChange={e=>setChar({...char, class: e.target.value})} className="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white">{CLASSES.map(c=><option key={c.name} value={c.name}>{c.name}</option>)}</select></div>
+                                        <div className="mb-4"><label className="block text-xs font-bold text-slate-400 mb-1">RAZZA</label><select value={char.race} onChange={e=>setChar({...char, race: e.target.value})} className="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white">{RACES.map(r=><option key={r} value={r}>{r}</option>)}</select></div>
+                                        <div className="mb-4"><label className="block text-xs font-bold text-slate-400 mb-1">ALLINEAMENTO</label><select value={char.alignment} onChange={e=>setChar({...char, alignment: e.target.value})} className="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white">{ALIGNMENTS.map(a=><option key={a} value={a}>{a}</option>)}</select></div>
+                                        <Input label="LIVELLO" type="number" value={char.level} onChange={e=>setChar({...char, level: parseInt(e.target.value)})} />
+                                        <Input label="ESPERIENZA (XP)" value={char.xp} onChange={e=>setChar({...char, xp: e.target.value})} />
                                     </div>
                                 </div>
                             )}
 
                             {activeTab === 'stats' && (
-                                <div className="space-y-8 animate-fade-in">
-                                    <div>
-                                        <h3 className="text-lg font-bold text-amber-500 mb-4 flex items-center gap-2"><Dices size={20}/> Caratteristiche</h3>
-                                        <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-                                            {STATS.map(stat => (
-                                                <StatBox 
-                                                    key={stat} 
-                                                    label={stat} 
-                                                    value={char.stats[stat]} 
-                                                    onChange={(val) => handleStatChange(stat, val)} 
-                                                />
-                                            ))}
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                                        {Object.keys(char.stats).map(s => (
+                                            <div key={s} className="bg-slate-900 p-2 rounded text-center border border-slate-700">
+                                                <div className="text-[10px] text-slate-500 uppercase font-bold">{s.substring(0,3)}</div>
+                                                <input type="number" value={char.stats[s]} onChange={e => setChar({...char, stats: {...char.stats, [s]: parseInt(e.target.value)||10}})} className="w-full bg-transparent text-center text-lg font-bold text-white outline-none no-spinner" />
+                                                <div className="text-xs text-amber-500 font-bold">{getModifier(char.stats[s])}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <hr className="border-slate-700" />
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <DynamicCounter label="Punti Ferita" icon={Heart} color="text-red-500" current={char.hpCurrent} max={char.hpMax} onChangeCurrent={v => setChar({...char, hpCurrent: v})} onChangeMax={v => setChar({...char, hpMax: v})} />
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-slate-900 p-3 rounded border border-slate-700"><label className="text-xs text-slate-500 uppercase font-bold">CA</label><input type="number" value={char.ac} onChange={e=>setChar({...char, ac: parseInt(e.target.value)})} className="w-full bg-transparent text-2xl font-bold text-white outline-none no-spinner" /></div>
+                                            <div className="bg-slate-900 p-3 rounded border border-slate-700"><label className="text-xs text-slate-500 uppercase font-bold">Iniz</label><div className="text-2xl font-bold text-slate-300">{getModifier(char.stats.Destrezza)}</div></div>
                                         </div>
                                     </div>
-
-                                    <div className="h-px bg-slate-700 w-full" />
-
-                                    <div>
-                                        <h3 className="text-lg font-bold text-red-400 mb-4 flex items-center gap-2"><Sword size={20}/> Statistiche Combattimento</h3>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                                            <div className="p-3 bg-slate-900 rounded border border-slate-700">
-                                                <label className="text-xs text-slate-500 font-bold block mb-1">Punti Ferita (Max)</label>
-                                                <input type="number" className="bg-transparent text-xl font-bold text-green-400 w-full outline-none" 
-                                                    value={char.hpMax} onChange={e => handleNumberChange('hpMax', e.target.value)} />
-                                            </div>
-                                            <div className="p-3 bg-slate-900 rounded border border-slate-700">
-                                                <label className="text-xs text-slate-500 font-bold block mb-1">Classe Armatura</label>
-                                                <input type="number" className="bg-transparent text-xl font-bold text-slate-200 w-full outline-none" 
-                                                    value={char.ac} onChange={e => handleNumberChange('ac', e.target.value)} />
-                                            </div>
-                                            <div className="p-3 bg-slate-900 rounded border border-slate-700 opacity-70">
-                                                <label className="text-xs text-slate-500 font-bold block mb-1">Bonus Competenza</label>
-                                                <div className="text-xl font-bold text-slate-300">+{Math.ceil(1 + ((char.level || 1) / 4))}</div>
-                                            </div>
-                                            <div className="p-3 bg-slate-900 rounded border border-slate-700 opacity-70">
-                                                <label className="text-xs text-slate-500 font-bold block mb-1">Iniziativa</label>
-                                                <div className="text-xl font-bold text-slate-300">{getModifier(char.stats.Destrezza)}</div>
-                                            </div>
-                                        </div>
-                                        
-                                        <Input 
-                                            textarea 
-                                            label="Resistenze, Immunità & Vulnerabilità" 
-                                            placeholder="Es. Resistenza al danno Necrotico (Aasimar), Immunità al Veleno..."
-                                            value={char.resistances} 
-                                            onChange={e => setChar({...char, resistances: e.target.value})}
-                                            className="bg-slate-900/50"
-                                        />
-                                    </div>
+                                    <Input textarea label="Resistenze & Immunità" value={char.resistances} onChange={e=>setChar({...char, resistances: e.target.value})} className="bg-slate-900/50" />
                                 </div>
                             )}
 
@@ -951,46 +743,9 @@
                                     <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
                                         <h3 className="text-sm font-bold text-amber-500 mb-3 uppercase tracking-wider">Borsello</h3>
                                         <div className="grid grid-cols-3 gap-4">
-                                            <div>
-                                                <label className="text-xs text-yellow-500 font-bold block">Oro (MO)</label>
-                                                <input type="number" value={(char.money && char.money.gp) || 0} onChange={e => setChar({...char, money: {...char.money, gp: parseInt(e.target.value)}})}
-                                                    className="w-full bg-slate-800 rounded p-2 text-yellow-400 font-bold border border-slate-700 focus:border-yellow-500 outline-none" />
-                                            </div>
-                                            <div>
-                                                <label className="text-xs text-slate-300 font-bold block">Argento (MA)</label>
-                                                <input type="number" value={(char.money && char.money.sp) || 0} onChange={e => setChar({...char, money: {...char.money, sp: parseInt(e.target.value)}})}
-                                                    className="w-full bg-slate-800 rounded p-2 text-slate-300 font-bold border border-slate-700 focus:border-slate-400 outline-none" />
-                                            </div>
-                                            <div>
-                                                <label className="text-xs text-orange-700 font-bold block">Rame (MR)</label>
-                                                <input type="number" value={(char.money && char.money.cp) || 0} onChange={e => setChar({...char, money: {...char.money, cp: parseInt(e.target.value)}})}
-                                                    className="w-full bg-slate-800 rounded p-2 text-orange-600 font-bold border border-slate-700 focus:border-orange-800 outline-none" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Input Nuovo Oggetto */}
-                                    <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
-                                        <h3 className="text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider">Aggiungi Oggetto</h3>
-                                        <div className="flex gap-2 items-end">
-                                            <div className="flex-1">
-                                                <label className="text-xs text-slate-500 font-bold">Nome</label>
-                                                <input type="text" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} 
-                                                    placeholder="Es. Chiave Antica" className="w-full bg-slate-800 p-2 rounded text-sm border border-slate-600 outline-none text-white"/>
-                                            </div>
-                                            <div className="w-36">
-                                                <label className="text-xs text-slate-500 font-bold">Tipo</label>
-                                                <select value={newItem.type} onChange={e => setNewItem({...newItem, type: e.target.value})}
-                                                    className="w-full bg-slate-800 p-2 rounded text-sm border border-slate-600 outline-none text-white">
-                                                    {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                                                </select>
-                                            </div>
-                                            <div className="w-16">
-                                                <label className="text-xs text-slate-500 font-bold">Q.tà</label>
-                                                <input type="number" value={newItem.qty} onChange={e => setNewItem({...newItem, qty: parseInt(e.target.value)})} 
-                                                    className="w-full bg-slate-800 p-2 rounded text-sm border border-slate-600 outline-none text-white"/>
-                                            </div>
-                                            <Button onClick={addItem} variant="primary" className="h-[38px]"><Plus size={18}/></Button>
+                                            <div><label className="text-xs text-yellow-500 font-bold block">Oro</label><input type="number" value={(char.money && char.money.gp) || 0} onChange={e => setChar({...char, money: {...char.money, gp: parseInt(e.target.value)}})} className="w-full bg-slate-800 rounded p-2 text-yellow-400 font-bold border border-slate-700 outline-none no-spinner" /></div>
+                                            <div><label className="text-xs text-slate-300 font-bold block">Argento</label><input type="number" value={(char.money && char.money.sp) || 0} onChange={e => setChar({...char, money: {...char.money, sp: parseInt(e.target.value)}})} className="w-full bg-slate-800 rounded p-2 text-slate-300 font-bold border border-slate-700 outline-none no-spinner" /></div>
+                                            <div><label className="text-xs text-orange-700 font-bold block">Rame</label><input type="number" value={(char.money && char.money.cp) || 0} onChange={e => setChar({...char, money: {...char.money, cp: parseInt(e.target.value)}})} className="w-full bg-slate-800 rounded p-2 text-orange-600 font-bold border border-slate-700 outline-none no-spinner" /></div>
                                         </div>
                                     </div>
 
@@ -998,180 +753,114 @@
                                     <div className="flex flex-wrap gap-2 items-center justify-between pb-2 border-b border-slate-800">
                                         <div className="flex gap-2 items-center">
                                             <Filter size={16} className="text-slate-500"/>
-                                            <select 
-                                                value={invFilter} 
-                                                onChange={e => setInvFilter(e.target.value)}
-                                                className="bg-slate-900 border border-slate-700 rounded text-xs p-1 text-slate-300 outline-none"
-                                            >
+                                            <select value={invFilter} onChange={e => setInvFilter(e.target.value)} className="bg-slate-900 border border-slate-700 rounded text-xs p-1 text-slate-300 outline-none">
                                                 <option value="Tutti">Tutti</option>
-                                                <option value="Arsenale">Arsenale (Armi/Armature)</option>
-                                                <option value="Zaino">Zaino (Altro)</option>
+                                                <option value="Arsenale">Arsenale</option>
+                                                <option value="Zaino">Zaino</option>
                                                 {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                             </select>
                                         </div>
                                         <div className="flex gap-2 items-center">
                                             <ArrowDownAZ size={16} className="text-slate-500"/>
-                                            <select 
-                                                value={invSort} 
-                                                onChange={e => setInvSort(e.target.value)}
-                                                className="bg-slate-900 border border-slate-700 rounded text-xs p-1 text-slate-300 outline-none"
-                                            >
-                                                <option value="Nome">Nome (A-Z)</option>
+                                            <select value={invSort} onChange={e => setInvSort(e.target.value)} className="bg-slate-900 border border-slate-700 rounded text-xs p-1 text-slate-300 outline-none">
+                                                <option value="Nome">Nome</option>
                                                 <option value="Tipo">Tipo</option>
                                                 <option value="Quantità">Quantità</option>
                                             </select>
                                         </div>
                                     </div>
 
-                                    {/* Lista Oggetti Filtrata */}
-                                    <div className="space-y-2">
-                                        {filteredItems.map(item => (
-                                            <InventoryItem 
-                                                key={item.id} 
-                                                item={item} 
-                                                onDelete={removeItem} 
-                                                onUpdate={updateItem}
-                                            />
-                                        ))}
-                                        {filteredItems.length === 0 && <div className="text-slate-600 italic text-sm py-4 text-center">Nessun oggetto trovato.</div>}
+                                    {/* Aggiungi Oggetto */}
+                                    <div className="flex gap-2 items-end bg-slate-900 p-3 rounded border border-slate-700">
+                                        <div className="flex-1">
+                                            <label className="text-[10px] text-slate-500 font-bold uppercase">Nome</label>
+                                            <input type="text" value={newItem.name} onChange={e=>setNewItem({...newItem, name: e.target.value})} className="w-full bg-slate-800 text-white text-sm p-2 rounded border border-slate-600 outline-none" />
+                                        </div>
+                                        <div className="w-32">
+                                            <label className="text-[10px] text-slate-500 font-bold uppercase">Tipo</label>
+                                            <select value={newItem.type} onChange={e=>setNewItem({...newItem, type: e.target.value})} className="w-full bg-slate-800 text-white text-sm p-2 rounded border border-slate-600 outline-none">
+                                                {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="w-16">
+                                            <label className="text-[10px] text-slate-500 font-bold uppercase">Q.tà</label>
+                                            <input type="number" value={newItem.qty} onChange={e=>setNewItem({...newItem, qty: parseInt(e.target.value)})} className="w-full bg-slate-800 text-white text-sm p-2 rounded border border-slate-600 outline-none no-spinner" />
+                                        </div>
+                                        <Button onClick={addItem} variant="primary"><Plus size={16}/></Button>
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        {filteredInventory.map(item => <InventoryItem key={item.id} item={item} onDelete={id => setChar(p=>({...p, inventory: p.inventory.filter(x=>x.id!==id)}))} onUpdate={updateItem} />)}
+                                        {filteredInventory.length === 0 && <div className="text-center text-slate-600 italic py-4">Nessun oggetto trovato.</div>}
                                     </div>
                                 </div>
                             )}
 
                             {activeTab === 'magic' && (
-                                <div className="space-y-8 animate-fade-in">
-                                    
-                                    {/* Risorse Magiche */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="bg-slate-900 p-3 rounded border border-slate-700 flex items-center justify-between">
-                                            <div className="flex items-center gap-2 text-rose-400 font-bold">
-                                                <Flame size={18}/> Punti Stregoneria
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <input type="number" className="w-10 bg-slate-800 text-center rounded border border-slate-600 text-white font-bold" 
-                                                    value={char.resources?.sorcery?.current || 0} onChange={e => handleResourceChange('sorcery', 'current', e.target.value)} />
-                                                <span className="text-slate-500">/</span>
-                                                <input type="number" className="w-10 bg-slate-800 text-center rounded border border-slate-600 text-slate-400" 
-                                                    value={char.resources?.sorcery?.max || 0} onChange={e => handleResourceChange('sorcery', 'max', e.target.value)} />
-                                            </div>
-                                        </div>
-                                        <div className="bg-slate-900 p-3 rounded border border-slate-700 flex items-center justify-between">
-                                            <div className="flex items-center gap-2 text-blue-400 font-bold">
-                                                <Zap size={18}/> Punti Magia
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <input type="number" className="w-10 bg-slate-800 text-center rounded border border-slate-600 text-white font-bold" 
-                                                    value={char.resources?.magic?.current || 0} onChange={e => handleResourceChange('magic', 'current', e.target.value)} />
-                                                <span className="text-slate-500">/</span>
-                                                <input type="number" className="w-10 bg-slate-800 text-center rounded border border-slate-600 text-slate-400" 
-                                                    value={char.resources?.magic?.max || 0} onChange={e => handleResourceChange('magic', 'max', e.target.value)} />
-                                            </div>
-                                        </div>
+                                <div className="space-y-6">
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <DynamicCounter label="Punti Stregoneria" icon={Flame} color="text-rose-400" current={char.resources.sorcery.current} max={char.resources.sorcery.max} onChangeCurrent={v=>setChar({...char, resources: {...char.resources, sorcery: {current: v, max: char.resources.sorcery.max}}})} onChangeMax={v=>setChar({...char, resources: {...char.resources, sorcery: {current: char.resources.sorcery.current, max: v}}})} />
+                                        <DynamicCounter label="Punti Magia" icon={Zap} color="text-blue-400" current={char.resources.magic.current} max={char.resources.magic.max} onChangeCurrent={v=>setChar({...char, resources: {...char.resources, magic: {current: v, max: char.resources.magic.max}}})} onChangeMax={v=>setChar({...char, resources: {...char.resources, magic: {current: char.resources.magic.current, max: v}}})} />
                                     </div>
-
-                                    {/* Slot Incantesimo */}
-                                    <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
-                                        <h3 className="text-sm font-bold text-purple-400 mb-3 uppercase tracking-wider">Slot Incantesimo</h3>
+                                    <div className="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                                        <h3 className="text-xs font-bold text-purple-400 uppercase mb-3 flex items-center gap-2"><Sparkles size={14}/> Slot Incantesimo</h3>
                                         <div className="grid grid-cols-3 md:grid-cols-9 gap-2">
                                             {[1,2,3,4,5,6,7,8,9].map(lvl => (
-                                                <div key={lvl} className="flex flex-col items-center bg-slate-800 p-2 rounded border border-slate-700">
-                                                    <span className="text-[10px] text-slate-500 font-bold uppercase mb-1">{lvl}°</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <input 
-                                                            type="text" 
-                                                            className="w-full text-center bg-transparent font-bold text-white outline-none"
-                                                            value={char.spellSlots?.[lvl]?.current || 0}
-                                                            onChange={(e) => handleSlotChange(lvl, 'current', e.target.value)}
-                                                        />
-                                                        <span className="text-slate-600">/</span>
-                                                        <input 
-                                                            type="text" 
-                                                            className="w-full text-center bg-transparent text-slate-400 outline-none"
-                                                            value={char.spellSlots?.[lvl]?.max || 0}
-                                                            onChange={(e) => handleSlotChange(lvl, 'max', e.target.value)}
-                                                        />
+                                                <div key={lvl} className="flex flex-col items-center bg-slate-800 p-2 rounded border border-slate-700 relative">
+                                                    <span className="text-[10px] text-slate-500 font-bold absolute top-1 left-1">{lvl}</span>
+                                                    <div className="mt-2 text-center">
+                                                        <div className="text-xl font-bold text-purple-200">{char.spellSlots[lvl]?.current||0}</div>
+                                                        <div className="w-full h-px bg-slate-600 my-1"></div>
+                                                        <input type="number" className="bg-transparent text-center w-full text-xs text-slate-500 font-bold outline-none no-spinner" value={char.spellSlots[lvl]?.max||0} onChange={e => setChar(p => ({...p, spellSlots: {...p.spellSlots, [lvl]: {current: p.spellSlots[lvl]?.current||0, max: parseInt(e.target.value)||0}}}))} />
                                                     </div>
+                                                    <div className="flex justify-between w-full mt-1"><button onClick={() => setChar(p => ({...p, spellSlots: {...p.spellSlots, [lvl]: {...p.spellSlots[lvl], current: Math.max(0, (p.spellSlots[lvl]?.current||0)-1)}} }))} className="text-slate-500 hover:text-white px-1">-</button><button onClick={() => setChar(p => ({...p, spellSlots: {...p.spellSlots, [lvl]: {...p.spellSlots[lvl], current: (p.spellSlots[lvl]?.current||0)+1}} }))} className="text-slate-500 hover:text-white px-1">+</button></div>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
-
-                                    {/* Aggiungi Incantesimo */}
-                                    <div className="bg-slate-900 p-4 rounded-lg border border-slate-700 mb-6">
-                                        <h3 className="text-sm font-bold text-purple-400 mb-3 uppercase tracking-wider">Aggiungi Incantesimo</h3>
-                                        <div className="flex gap-2 items-end">
-                                            <div className="flex-1">
-                                                <label className="text-xs text-slate-500 font-bold">Nome Incantesimo</label>
-                                                <input type="text" value={newSpell.name} onChange={e => setNewSpell({...newSpell, name: e.target.value})} 
-                                                    placeholder="Es. Palla di Fuoco" className="w-full bg-slate-800 p-2 rounded text-sm border border-slate-600 outline-none text-white"/>
-                                            </div>
-                                            <div className="w-40">
-                                                <label className="text-xs text-slate-500 font-bold">Livello</label>
-                                                <select value={newSpell.level} onChange={e => setNewSpell({...newSpell, level: parseInt(e.target.value)})}
-                                                    className="w-full bg-slate-800 p-2 rounded text-sm border border-slate-600 outline-none text-white">
-                                                    <option value={0}>Trucchetto (Lv 0)</option>
-                                                    {[1,2,3,4,5,6,7,8,9].map(l => <option key={l} value={l}>Livello {l}</option>)}
-                                                </select>
-                                            </div>
-                                            <Button onClick={addSpell} variant="primary" className="h-[38px]"><Plus size={18}/></Button>
+                                    <div className="bg-slate-900 p-3 rounded border border-slate-700">
+                                        <div className="flex gap-2 mb-2">
+                                            <select value={newSpellLvl} onChange={e=>setNewSpellLvl(parseInt(e.target.value))} className="bg-slate-800 text-white text-sm rounded p-2 border border-slate-600"><option value={0}>Cantrip</option>{[1,2,3,4,5,6,7,8,9].map(l=><option key={l} value={l}>Lv {l}</option>)}</select>
+                                            <select value={selSpell} onChange={e=>{setSelSpell(e.target.value); setSpellName(e.target.value)}} className="bg-slate-800 text-white text-sm rounded p-2 border border-slate-600 flex-1"><option value="">-- Seleziona ({char.class || 'Tutti'}) --</option>{filteredSpells.map(s=><option key={s.n} value={s.n}>{s.n}</option>)}</select>
                                         </div>
+                                        <div className="flex gap-2"><input type="text" value={spellName} onChange={e=>setSpellName(e.target.value)} placeholder="Nome incantesimo..." className="flex-1 bg-slate-800 text-white text-sm rounded p-2 border border-slate-600" /><Button onClick={addSpell} variant="primary"><Plus size={16}/></Button></div>
                                     </div>
-
-                                    {/* Trucchetti */}
-                                    <div>
-                                        <h4 className="text-slate-400 font-bold uppercase tracking-wider text-xs mb-2 border-b border-slate-700 pb-1">Trucchetti (Cantrips)</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                            {char.spells && char.spells.filter(s => s.level === 0).map(spell => (
-                                                <SpellItem 
-                                                    key={spell.id} 
-                                                    spell={spell} 
-                                                    onDelete={removeSpell}
-                                                    onUpdate={updateSpell}
-                                                />
-                                            ))}
-                                            {(!char.spells || char.spells.filter(s => s.level === 0).length === 0) && <div className="text-slate-600 italic text-sm">Nessun trucchetto conosciuto.</div>}
-                                        </div>
-                                    </div>
-
-                                    {/* Incantesimi per Livello */}
-                                    {[1,2,3,4,5,6,7,8,9].map(lvl => {
-                                        const spellsOfLevel = char.spells ? char.spells.filter(s => s.level === lvl) : [];
-                                        if (spellsOfLevel.length === 0) return null;
-                                        return (
-                                            <div key={lvl}>
-                                                <h4 className="text-purple-400 font-bold uppercase tracking-wider text-xs mb-2 border-b border-slate-700 pb-1 mt-4">Livello {lvl}</h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                                    {spellsOfLevel.map(spell => (
-                                                        <SpellItem 
-                                                            key={spell.id} 
-                                                            spell={spell} 
-                                                            onDelete={removeSpell}
-                                                            onUpdate={updateSpell}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        );
+                                    {[0,1,2,3,4,5,6,7,8,9].map(lvl => {
+                                        const list = char.spells.filter(s=>s.level===lvl);
+                                        if(!list.length) return null;
+                                        return <div key={lvl}><h4 className="text-xs font-bold text-slate-500 uppercase mb-2 border-b border-slate-800 pb-1">{lvl === 0 ? "Trucchetti" : `Livello ${lvl}`}</h4><div className="grid gap-2">{list.map(s => <SpellItem key={s.id} spell={s} onDelete={id => setChar(p=>({...p, spells: p.spells.filter(x=>x.id!==id)}))} onUpdate={(id, d) => setChar(p=>({...p, spells: p.spells.map(x=>x.id===id?{...x, ...d}:x)}))} />)}</div></div>
                                     })}
                                 </div>
                             )}
-
-                            {activeTab === 'story' && (
-                                <div className="space-y-6 animate-fade-in">
-                                    <Input textarea label="Backstory" placeholder="Da dove viene il tuo personaggio? Qual è il suo passato traumatico o glorioso?"
-                                        value={char.backstory} onChange={e => setChar({...char, backstory: e.target.value})} />
-                                    
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <Input textarea label="Tratti della Personalità & Ideali" placeholder="Come si comporta? Cosa guida le sue azioni?"
-                                            value={char.personality} onChange={e => setChar({...char, personality: e.target.value})} />
-                                        <Input textarea label="Legami & Difetti" placeholder="A chi tiene? Qual è la sua debolezza?"
-                                            value={char.notes} onChange={e => setChar({...char, notes: e.target.value})} />
+                            {activeTab === 'abilities' && (
+                                <div className="space-y-6">
+                                    <div className="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                                        <h3 className="text-sm font-bold text-yellow-500 mb-3 uppercase flex items-center gap-2"><Star size={16}/> Nuova Abilità</h3>
+                                        <div className="grid gap-3">
+                                            <div className="flex gap-2">
+                                                <select value={featType} onChange={e=>{setFeatType(e.target.value); setSelFeat('')}} className="bg-slate-800 text-white text-sm rounded p-2 border border-slate-600 w-1/3"><option value="Classe">Privilegio Classe</option><option value="Razza">Tratto Razziale</option><option value="Talento">Talento</option><option value="Altro">Altro</option></select>
+                                                <select value={selFeat} onChange={e=>{ setSelFeat(e.target.value); const f = filteredFeats.find(x=>x.n===e.target.value); if(f) { setFeatName(f.n); setFeatDesc(f.d); } }} className="bg-slate-800 text-white text-sm rounded p-2 border border-slate-600 flex-1"><option value="">-- Seleziona dalla lista --</option>{filteredFeats.map(f=><option key={f.n} value={f.n}>{f.n}</option>)}</select>
+                                            </div>
+                                            <input type="text" value={featName} onChange={e=>setFeatName(e.target.value)} placeholder="Nome abilità..." className="bg-slate-800 text-white text-sm rounded p-2 border border-slate-600 w-full" />
+                                            <textarea value={featDesc} onChange={e=>setFeatDesc(e.target.value)} placeholder="Descrizione effetto..." className="bg-slate-800 text-white text-sm rounded p-2 border border-slate-600 w-full h-20" />
+                                            <div className="flex justify-end"><Button onClick={addFeat} variant="primary">Aggiungi</Button></div>
+                                        </div>
                                     </div>
-                                    
-                                    <div className="bg-amber-900/10 p-4 rounded-lg border border-amber-900/30">
-                                        <p className="text-xs text-amber-600/80 italic">
-                                            Suggerimento: Per un profilo psicologico più profondo, considera di definire una paura irrazionale e un obiettivo segreto che nemmeno il party conosce.
-                                        </p>
+                                    <div className="space-y-4">
+                                        {['Classe', 'Razza', 'Talento', 'Altro'].map(cat => {
+                                            const list = char.abilities?.filter(a=>a.source===cat) || [];
+                                            if(!list.length) return null;
+                                            return <div key={cat}><h4 className="text-xs font-bold text-slate-500 uppercase mb-2 border-b border-slate-800 pb-1">{cat}</h4><div className="grid gap-2">{list.map(f => <div key={f.id} className="bg-slate-800 p-3 rounded border border-slate-700 relative group hover:border-amber-500/30 transition-colors"><h5 className="font-bold text-amber-500 text-sm">{f.name}</h5><p className="text-xs text-slate-300 mt-1 whitespace-pre-wrap leading-relaxed">{f.desc}</p><button onClick={() => setChar(p=>({...p, abilities: p.abilities.filter(x=>x.id!==f.id)}))} className="absolute top-2 right-2 text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={14}/></button></div>)}</div></div>
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                            {activeTab === 'story' && (
+                                <div className="space-y-6">
+                                    <Input textarea label="Backstory" value={char.backstory} onChange={e => setChar({...char, backstory: e.target.value})} />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <Input textarea label="Personalità" value={char.personality} onChange={e => setChar({...char, personality: e.target.value})} />
+                                        <Input textarea label="Note" value={char.notes} onChange={e => setChar({...char, notes: e.target.value})} />
                                     </div>
                                 </div>
                             )}
@@ -1186,352 +875,114 @@
             const [characters, setCharacters] = useState([]);
             const [editingId, setEditingId] = useState(null);
             const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-            const [viewMode, setViewMode] = useState('gallery'); // 'gallery' | 'list'
+            const [viewMode, setViewMode] = useState('gallery');
             const importInputRef = useRef(null);
-            
-            // Sync states
-            const [syncStatus, setSyncStatus] = useState('offline'); // offline, connecting, synced, saving, error
+            const [syncStatus, setSyncStatus] = useState('offline'); 
             const isRemoteUpdate = useRef(false);
             const firebaseRef = useRef(null);
             const dbRef = useRef(null);
 
-            // Caricamento dati locali all'avvio
-            useEffect(() => {
-                const saved = localStorage.getItem('dnd-characters');
-                if (saved) {
-                    try {
-                        setCharacters(JSON.parse(saved));
-                    } catch (e) { console.error(e); }
-                }
-            }, []);
-
-            // Salva su LocalStorage (sempre)
-            useEffect(() => {
-                if (characters.length > 0) {
-                    try {
-                        localStorage.setItem('dnd-characters', JSON.stringify(characters));
-                    } catch (e) {
-                        if (e.name === 'QuotaExceededError') {
-                            alert("ATTENZIONE: Spazio memoria pieno!");
-                        }
-                    }
-                }
-            }, [characters]);
-
-            // Inizializzazione Firebase e Auto-Sync
+            useEffect(() => { const saved = localStorage.getItem('dnd-characters'); if(saved) { try { setCharacters(JSON.parse(saved)); } catch (e) { console.error(e); } } }, []);
+            useEffect(() => { if(characters.length > 0) { try { localStorage.setItem('dnd-characters', JSON.stringify(characters)); } catch (e) { if (e.name === 'QuotaExceededError') { alert("ATTENZIONE: Spazio memoria pieno!"); } } } }, [characters]);
+            
+            // Firebase Sync Logic
             useEffect(() => {
                 const initFirebase = async () => {
                     const configStr = localStorage.getItem('dnd-firebase-config');
                     const syncId = localStorage.getItem('dnd-sync-id');
-
-                    if (!configStr || !syncId) {
-                        setSyncStatus('offline');
-                        return;
-                    }
-
+                    if (!configStr || !syncId) { setSyncStatus('offline'); return; }
                     try {
                         setSyncStatus('connecting');
-                        
-                        // Load scripts only if needed
-                        if (!window.firebase) {
-                            await new Promise((resolve) => {
-                                const script = document.createElement('script');
-                                script.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
-                                script.onload = resolve;
-                                document.head.appendChild(script);
-                            });
-                            await new Promise((resolve) => {
-                                const script = document.createElement('script');
-                                script.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js';
-                                script.onload = resolve;
-                                document.head.appendChild(script);
-                            });
-                            await new Promise((resolve) => {
-                                const script = document.createElement('script');
-                                script.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js';
-                                script.onload = resolve;
-                                document.head.appendChild(script);
-                            });
-                        }
-
+                        if (!window.firebase) return; 
                         const firebase = window.firebase;
-                        if (!firebase.apps.length) {
-                            firebase.initializeApp(JSON.parse(configStr));
-                        }
-
-                        // Auth anomimo per sicurezza
+                        if (!firebase.apps.length) firebase.initializeApp(JSON.parse(configStr));
                         await firebase.auth().signInAnonymously();
-
                         const db = firebase.firestore();
                         dbRef.current = db;
                         firebaseRef.current = firebase;
-
-                        // Listener per aggiornamenti dal cloud
-                        const unsubscribe = db.collection('grimorio_data').doc(syncId)
-                            .onSnapshot((doc) => {
-                                if (doc.exists) {
-                                    const data = doc.data();
-                                    const cloudChars = JSON.parse(data.characters);
-                                    
-                                    if (JSON.stringify(cloudChars) !== JSON.stringify(characters)) {
-                                        isRemoteUpdate.current = true;
-                                        setCharacters(cloudChars);
-                                        // Reset flag dopo render
-                                        setTimeout(() => isRemoteUpdate.current = false, 100);
-                                    }
+                        const unsubscribe = db.collection('grimorio_data').doc(syncId).onSnapshot((doc) => {
+                            if (doc.exists) {
+                                const data = doc.data();
+                                const cloudChars = JSON.parse(data.characters);
+                                if (JSON.stringify(cloudChars) !== JSON.stringify(characters)) {
+                                    isRemoteUpdate.current = true;
+                                    setCharacters(cloudChars);
+                                    setTimeout(() => isRemoteUpdate.current = false, 100);
                                 }
-                                setSyncStatus('synced');
-                            }, (error) => {
-                                console.error("Sync Error:", error);
-                                setSyncStatus('error');
-                            });
-
+                            }
+                            setSyncStatus('synced');
+                        }, (error) => { console.error("Sync Error:", error); setSyncStatus('error'); });
                         return () => unsubscribe();
-
-                    } catch (e) {
-                        console.error("Firebase Init Error:", e);
-                        setSyncStatus('error');
-                    }
+                    } catch (e) { console.error("Firebase Init Error:", e); setSyncStatus('error'); }
                 };
-
                 initFirebase();
-            }, []); // Esegui solo al mount
+            }, []);
 
-            // Effetto per Salvataggio Automatico su Cloud (Debounce)
             useEffect(() => {
                 const saveToCloud = async () => {
                     const syncId = localStorage.getItem('dnd-sync-id');
                     if (!dbRef.current || !syncId || isRemoteUpdate.current) return;
-
                     setSyncStatus('saving');
                     try {
-                        await dbRef.current.collection('grimorio_data').doc(syncId).set({
-                            characters: JSON.stringify(characters),
-                            updatedAt: new Date().toISOString()
-                        });
+                        await dbRef.current.collection('grimorio_data').doc(syncId).set({ characters: JSON.stringify(characters), updatedAt: new Date().toISOString() });
                         setSyncStatus('synced');
-                    } catch (e) {
-                        console.error("Save Error:", e);
-                        setSyncStatus('error');
-                    }
+                    } catch (e) { console.error("Save Error:", e); setSyncStatus('error'); }
                 };
-
-                const timeoutId = setTimeout(() => {
-                    if (characters.length > 0) saveToCloud();
-                }, 2000); // Salva dopo 2 secondi di inattività
-
+                const timeoutId = setTimeout(() => { if (characters.length > 0) saveToCloud(); }, 2000);
                 return () => clearTimeout(timeoutId);
             }, [characters]);
 
-
-            const handleSave = (char) => {
-                if (characters.find(c => c.id === char.id)) {
-                    setCharacters(characters.map(c => c.id === char.id ? char : c));
-                } else {
-                    setCharacters([...characters, char]);
-                }
-                setView('list');
-                setEditingId(null);
-            };
-
-            const handleDelete = (id) => {
-                if (window.confirm("Sei sicuro di voler eliminare questo eroe? L'azione è irreversibile.")) {
-                    setCharacters(characters.filter(c => c.id !== id));
-                }
-            };
-
-            const startEdit = (char) => {
-                setEditingId(char ? char.id : null);
-                setView('edit');
-            };
-
-            const handleExport = () => {
-                const dataStr = JSON.stringify(characters, null, 2);
-                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-                const exportFileDefaultName = `grimorio-backup-${new Date().toISOString().slice(0,10)}.json`;
-                const linkElement = document.createElement('a');
-                linkElement.setAttribute('href', dataUri);
-                linkElement.setAttribute('download', exportFileDefaultName);
-                linkElement.click();
-            };
-
-            const handleImport = (event) => {
-                const file = event.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const importedChars = JSON.parse(e.target.result);
-                        if (Array.isArray(importedChars)) {
-                            if(window.confirm(`Trovati ${importedChars.length} personaggi. Importare?`)) {
-                                setCharacters(prev => {
-                                    const newChars = [...prev];
-                                    importedChars.forEach(impChar => {
-                                        const index = newChars.findIndex(c => c.id === impChar.id);
-                                        if (index >= 0) newChars[index] = impChar;
-                                        else newChars.push(impChar);
-                                    });
-                                    return newChars;
-                                });
-                            }
-                        }
-                    } catch (err) { alert("Errore file."); }
-                };
-                reader.readAsText(file);
-                event.target.value = null;
-            };
-
-            // Icona stato Sync
-            const getSyncIcon = () => {
-                switch(syncStatus) {
-                    case 'saving': return <Cloud className="text-amber-500 animate-pulse" title="Salvataggio in corso..." />;
-                    case 'synced': return <CloudCheck className="text-green-500" title="Sincronizzato" />;
-                    case 'error': return <CloudOff className="text-red-500" title="Errore Sincronizzazione (Verifica Auth Anonima)" />;
-                    case 'connecting': return <Cloud className="text-slate-500 animate-pulse" title="Connessione..." />;
-                    default: return <CloudOff className="text-slate-600" title="Cloud non configurato" />;
-                }
-            };
+            const handleSave = (char) => { if (characters.find(c => c.id === char.id)) setCharacters(characters.map(c => c.id === char.id ? char : c)); else setCharacters([...characters, char]); setView('list'); setEditingId(null); };
+            const handleDelete = (id) => { if (window.confirm("Sei sicuro?")) setCharacters(characters.filter(c => c.id !== id)); };
+            const startEdit = (char) => { setEditingId(char ? char.id : null); setView('edit'); };
+            const handleExport = () => { const dataStr = JSON.stringify(characters, null, 2); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); const linkElement = document.createElement('a'); linkElement.setAttribute('href', dataUri); linkElement.setAttribute('download', `grimorio-backup-${new Date().toISOString().slice(0,10)}.json`); linkElement.click(); };
+            const handleImport = (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { try { const importedChars = JSON.parse(e.target.result); if (Array.isArray(importedChars)) { if(window.confirm(`Importare ${importedChars.length} personaggi?`)) setCharacters(prev => { const newChars = [...prev]; importedChars.forEach(impChar => { const index = newChars.findIndex(c => c.id === impChar.id); if (index >= 0) newChars[index] = impChar; else newChars.push(impChar); }); return newChars; }); } } catch (err) { alert("Errore file."); } }; reader.readAsText(file); event.target.value = null; };
+            const getSyncIcon = () => { switch(syncStatus) { case 'saving': return <Cloud className="text-amber-500 animate-pulse" title="Salvataggio..." />; case 'synced': return <CloudCheck className="text-green-500" title="Sincronizzato" />; case 'error': return <CloudOff className="text-red-500" title="Errore" />; case 'connecting': return <Cloud className="text-slate-500 animate-pulse" title="Connessione..." />; default: return <CloudOff className="text-slate-600" title="Cloud off" />; } };
 
             return (
                 <div className="min-h-screen font-sans selection:bg-amber-500/30">
                     <nav className="border-b border-slate-800 bg-slate-900 px-4 py-3 sticky top-0 z-50 shadow-lg">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3 shrink-0">
-                                <div className="bg-amber-600 p-2 rounded-lg text-slate-900">
-                                    <Sword size={24} />
-                                </div>
-                                <h1 className="text-xl font-bold tracking-tight text-slate-100 hidden sm:block">GRIMORIO <span className="text-amber-500">D&D</span></h1>
-                                <h1 className="text-xl font-bold tracking-tight text-slate-100 sm:hidden">GRIMORIO</h1>
-                            </div>
-                            
+                            <div className="flex items-center gap-3 shrink-0"><div className="bg-amber-600 p-2 rounded-lg text-slate-900"><Sword size={24} /></div><h1 className="text-xl font-bold tracking-tight text-slate-100 hidden sm:block">GRIMORIO <span className="text-amber-500">D&D</span></h1></div>
                             <div className="flex gap-2 items-center overflow-x-auto no-scrollbar ml-4 pl-2">
                                 {view === 'list' && (
                                     <>
-                                        {/* Sync Status Icon */}
                                         <div className="mr-2 cursor-help shrink-0">{getSyncIcon()}</div>
-
                                         <input type="file" ref={importInputRef} onChange={handleImport} accept=".json" className="hidden" />
-                                        
-                                        <Button onClick={() => setIsSettingsOpen(true)} variant="ghost" className="text-slate-400 hover:text-white shrink-0 px-2" title="Impostazioni Cloud">
-                                            <Settings size={20} />
-                                        </Button>
-                                        
+                                        <Button onClick={() => setIsSettingsOpen(true)} variant="ghost" className="text-slate-400 hover:text-white shrink-0 px-2" title="Cloud"><Settings size={20} /></Button>
                                         <div className="w-px bg-slate-700 h-6 shrink-0"></div>
-                                        
-                                        <Button onClick={() => importInputRef.current.click()} variant="secondary" className="shrink-0 px-3" title="Importa File Locale">
-                                            <Upload size={20} />
-                                        </Button>
-                                        <Button onClick={handleExport} variant="secondary" className="shrink-0 px-3" title="Esporta File Locale">
-                                            <Download size={20} />
-                                        </Button>
-                                        
+                                        <Button onClick={() => importInputRef.current.click()} variant="secondary" className="shrink-0 px-3"><Upload size={20} /></Button>
+                                        <Button onClick={handleExport} variant="secondary" className="shrink-0 px-3"><Download size={20} /></Button>
                                         <div className="w-px bg-slate-700 h-6 mx-1 shrink-0"></div>
-                                        
-                                        <Button onClick={() => startEdit(null)} className="animate-pulse-slow shrink-0">
-                                            <Plus size={20} /> <span className="hidden md:inline">Crea Eroe</span>
-                                        </Button>
+                                        <Button onClick={() => startEdit(null)} className="animate-pulse-slow shrink-0"><Plus size={20} /> <span className="hidden md:inline">Crea</span></Button>
                                     </>
                                 )}
                             </div>
                         </div>
                     </nav>
-
                     <main className="container mx-auto p-4 md:p-6">
                         {view === 'list' && (
                             <div className="space-y-6 animate-fade-in">
                                 {characters.length === 0 ? (
-                                    <div className="text-center py-20 flex flex-col items-center">
-                                        <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-6 text-slate-600">
-                                            <Ghost size={48} />
-                                        </div>
-                                        <h2 className="text-2xl font-bold text-slate-300 mb-2">La Taverna è vuota</h2>
-                                        <p className="text-slate-500 max-w-md mb-8">Non hai ancora creato nessun personaggio. Inizia subito a forgiare il destino del tuo prossimo eroe.</p>
-                                        <div className="flex gap-4">
-                                            <Button onClick={() => importInputRef.current.click()} variant="secondary">
-                                                <Upload size={18} /> Importa
-                                            </Button>
-                                            <Button onClick={() => startEdit(null)} variant="primary" className="text-lg px-8 py-3">
-                                                Inizia Creazione
-                                            </Button>
-                                        </div>
-                                    </div>
+                                    <div className="text-center py-20 flex flex-col items-center"><div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-6 text-slate-600"><Ghost size={48} /></div><h2 className="text-2xl font-bold text-slate-300 mb-2">La Taverna è vuota</h2><p className="text-slate-500 max-w-md mb-8">Inizia subito a forgiare il destino del tuo prossimo eroe.</p><div className="flex gap-4"><Button onClick={() => importInputRef.current.click()} variant="secondary"><Upload size={18} /> Importa</Button><Button onClick={() => startEdit(null)} variant="primary" className="text-lg px-8 py-3">Inizia Creazione</Button></div></div>
                                 ) : (
                                     <>
-                                        <div className="flex items-center justify-between">
-                                            <h2 className="text-slate-400 font-medium uppercase tracking-widest text-sm">I tuoi Personaggi ({characters.length})</h2>
-                                            <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
-                                                <button 
-                                                    onClick={() => setViewMode('gallery')}
-                                                    className={`p-2 rounded ${viewMode === 'gallery' ? 'bg-slate-700 text-amber-500 shadow-sm' : 'text-slate-400 hover:text-white'}`}
-                                                    title="Vista Galleria"
-                                                >
-                                                    <LayoutGrid size={18} />
-                                                </button>
-                                                <button 
-                                                    onClick={() => setViewMode('list')}
-                                                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-slate-700 text-amber-500 shadow-sm' : 'text-slate-400 hover:text-white'}`}
-                                                    title="Vista Lista"
-                                                >
-                                                    <LayoutList size={18} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className={viewMode === 'gallery' 
-                                            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
-                                            : "flex flex-col gap-4"
-                                        }>
-                                            {characters.map(char => (
-                                                <CharacterCard 
-                                                    key={char.id} 
-                                                    character={char} 
-                                                    onEdit={startEdit} 
-                                                    onDelete={handleDelete} 
-                                                    viewMode={viewMode}
-                                                />
-                                            ))}
-                                            
-                                            {viewMode === 'gallery' && (
-                                                <button 
-                                                    onClick={() => startEdit(null)}
-                                                    className="flex flex-col items-center justify-center min-h-[300px] bg-slate-900/50 border-2 border-dashed border-slate-800 rounded-xl hover:border-amber-500/50 hover:bg-slate-900 transition-all group"
-                                                >
-                                                    <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-600 group-hover:text-amber-500 group-hover:scale-110 transition-all">
-                                                        <Plus size={32} />
-                                                    </div>
-                                                    <span className="mt-4 font-medium text-slate-500 group-hover:text-amber-500">Aggiungi Nuovo</span>
-                                                </button>
-                                            )}
-                                        </div>
+                                        <div className="flex items-center justify-between"><h2 className="text-slate-400 font-medium uppercase tracking-widest text-sm">I tuoi Personaggi ({characters.length})</h2><div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700"><button onClick={() => setViewMode('gallery')} className={`p-2 rounded ${viewMode === 'gallery' ? 'bg-slate-700 text-amber-500 shadow-sm' : 'text-slate-400 hover:text-white'}`}><LayoutGrid size={18} /></button><button onClick={() => setViewMode('list')} className={`p-2 rounded ${viewMode === 'list' ? 'bg-slate-700 text-amber-500 shadow-sm' : 'text-slate-400 hover:text-white'}`}><LayoutList size={18} /></button></div></div>
+                                        <div className={viewMode === 'gallery' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-4"}>{characters.map(char => <CharacterCard key={char.id} character={char} onEdit={startEdit} onDelete={handleDelete} viewMode={viewMode} />)}</div>
                                     </>
                                 )}
                             </div>
                         )}
-
-                        {view === 'edit' && (
-                            <CharacterEditor 
-                                initialData={editingId ? characters.find(c => c.id === editingId) : null}
-                                onSave={handleSave}
-                                onCancel={() => setView('list')}
-                            />
-                        )}
+                        {view === 'edit' && <CharacterEditor initialData={editingId ? characters.find(c => c.id === editingId) : null} onSave={handleSave} onCancel={() => setView('list')} />}
                     </main>
-                    <SettingsModal 
-                        isOpen={isSettingsOpen} 
-                        onClose={() => setIsSettingsOpen(false)}
-                        onSave={() => window.location.reload()} 
-                    />
+                    <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} onSave={() => window.location.reload()} />
                     <DiceRoller />
                 </div>
             );
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(
-            <ErrorBoundary>
-                <App />
-            </ErrorBoundary>
-        );
+        root.render(<ErrorBoundary><App /></ErrorBoundary>);
     </script>
 </body>
 </html>
