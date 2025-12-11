@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grimorio D&D</title>
-    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="icon" type="image/png" href="dnd_favicon.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="DnD.png">
+    <link rel="manifest" href="manifest.json">
     
     <!-- Libraries -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
@@ -109,15 +111,18 @@
             { n: "Giuramento di Devozione", type: "Origine", req: "Paladino", d: "Aura sacra, scaccia immondi." },
             { n: "Giuramento della Vendetta", type: "Origine", req: "Paladino", d: "Vantaggio contro nemico giurato." },
             { n: "Tradizione: Invocazione", type: "Origine", req: "Mago", d: "Scolpisci incantesimi per non colpire alleati." },
-            { n: "Archetipo: Campione", type: "Origine", req: "Guerriero", d: "Critico 19-20." },
+            { n: "Archetipo: Campione", type: "Origine", req: "Guerriero", d: "Critico con 19 o 20." },
             { n: "Archetipo: Maestro di Battaglia", type: "Origine", req: "Guerriero", d: "Manovre tattiche e dadi di superiorità." },
             { n: "Archetipo: Furfante", type: "Origine", req: "Ladro", d: "Mani veloci." },
 
             // RAZZIALI
             { n: "Scurovisione", type: "Razziale", req: "Tutti", d: "Vedi al buio 18m." },
-            { n: "Mani Guaritrici", type: "Razziale", req: "Aasimar", d: "Cura pari a livello." },
-            { n: "Resistenza Necrotica", type: "Razziale", req: "Aasimar", d: "Resistenza danni." },
-            { n: "Resistenza Infernale", type: "Razziale", req: "Tiefling", d: "Resistenza fuoco." },
+            { n: "Mani Guaritrici", type: "Razziale", req: "Aasimar", d: "Azione: tocchi creatura e cura pari al tuo livello. 1 volta/riposo lungo." },
+            { n: "Resistenza Necrotica", type: "Razziale", req: "Aasimar", d: "Hai resistenza ai danni necrotici." },
+            { n: "Resistenza Infernale", type: "Razziale", req: "Tiefling", d: "Hai resistenza ai danni da fuoco." },
+            { n: "Retaggio Fatato", type: "Razziale", req: "Elfo", d: "Vantaggio ai TS contro charme, immunità al sonno magico." },
+            { n: "Resilienza Nanica", type: "Razziale", req: "Nano", d: "Vantaggio ai TS veleno e resistenza danni veleno." },
+            { n: "Fortunato", type: "Razziale", req: "Halfling", d: "Ritira gli 1 naturali su TxC, abilità e TS." },
             { n: "Soffio del Drago", type: "Razziale", req: "Dragonide", d: "Danni ad area." },
             
             // CLASSE
@@ -188,7 +193,8 @@
             ChevronLeft: `<path d="m15 18-6-6 6-6"/>`,
             Skull: `<circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/>`,
             Heart: `<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>`,
-            Save: `<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>`
+            Save: `<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>`,
+            Cross: `<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>` // Added Cross icon definition
         };
 
         const { useState, useEffect, useRef, useCallback } = React;
@@ -228,14 +234,14 @@
             return mod >= 0 ? `+${mod}` : mod;
         };
 
-        const Button = ({ children, onClick, variant = 'primary', className = '', type = 'button' }) => {
+        const Button = ({ children, onClick, variant = 'primary', className = '' }) => {
             const variants = {
                 primary: "bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20",
                 secondary: "bg-slate-700 hover:bg-slate-600 text-slate-200",
                 danger: "bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-800",
                 ghost: "bg-transparent hover:bg-slate-800 text-slate-400 hover:text-white"
             };
-            return <button type={type} onClick={onClick} className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${variants[variant]} ${className}`}>{children}</button>;
+            return <button onClick={onClick} className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${variants[variant]} ${className}`}>{children}</button>;
         };
 
         const Input = ({ label, value, onChange, type = "text", placeholder = "", textarea = false }) => (
@@ -291,19 +297,14 @@
         const HPCounter = ({ label, current, max, onChangeCurrent, onChangeMax, color = "text-slate-200", icon }) => {
             return (
                 <div className="bg-slate-900 p-4 rounded-xl border border-slate-700 flex flex-col h-full relative overflow-hidden group shadow-lg">
-                    {/* Header */}
                     <div className={`flex items-center gap-2 font-bold mb-4 uppercase text-xs tracking-widest ${color} opacity-80 z-10 relative`}>
                         <Icon path={icon} size={16} /> {label}
                     </div>
-                    
-                    {/* Content - Center vertically and horizontally */}
                     <div className="flex flex-1 items-center justify-center gap-6 z-10 relative">
                          <button onClick={() => onChangeCurrent(Math.max(0, current - 1))} className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-800 border border-slate-600 hover:bg-slate-700 text-slate-400 hover:text-white transition-all shadow-md active:scale-95"><Icon path={I.Minus} size={20}/></button>
                          <span className={`text-6xl font-black ${color} tracking-tighter leading-none min-w-[3ch] text-center`}>{current}</span>
                          <button onClick={() => onChangeCurrent(current + 1)} className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-800 border border-slate-600 hover:bg-slate-700 text-slate-400 hover:text-white transition-all shadow-md active:scale-95"><Icon path={I.Plus} size={20}/></button>
                     </div>
-
-                    {/* Footer */}
                     <div className="flex justify-center w-full mt-4 pt-3 border-t border-slate-800 z-10 relative">
                          <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-lg">
                                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">MAX</span>
@@ -330,91 +331,144 @@
             </div>
         );
 
-        const InventoryItem = ({ item, onDelete, onUpdate }) => {
+        const InventoryItem = ({ item, onDelete, onUpdate, viewMode }) => {
             const [isEditing, setIsEditing] = useState(false);
-            const [editData, setEditData] = useState({ name: item.name, type: item.type });
+            const [isExpanded, setIsExpanded] = useState(false);
+            const [editData, setEditData] = useState({ ...item });
 
             const handleSave = () => {
                 onUpdate(item.id, editData);
                 setIsEditing(false);
             };
 
-            const getTagStyle = (type) => {
-                if (type === 'Pozione') return 'text-pink-400 bg-pink-500/10 border-pink-500/20';
-                if (type === 'Oggetto Magico') return 'text-purple-400 bg-purple-500/10 border-purple-500/20';
-                if (type === 'Oggetto Chiave') return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-                if (type === 'Strumento') return 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20';
-                return 'text-slate-400 bg-slate-800 border-slate-700';
+            const getIcon = () => {
+                 if (['Arma', 'Armatura'].includes(item.type)) return I.Sword;
+                 if (item.type === 'Oggetto Magico') return I.Sparkles;
+                 if (item.type === 'Pozione') return I.Flame; 
+                 return I.Backpack;
+            };
+            
+            const getColor = () => {
+                if (item.type === 'Oggetto Magico') return 'text-purple-400';
+                if (item.type === 'Pozione') return 'text-pink-400';
+                if (item.type === 'Oggetto Chiave') return 'text-amber-400';
+                return 'text-slate-400';
             };
 
-            return (
-                <div className="flex items-center justify-between bg-slate-800 p-3 rounded border border-slate-700 hover:border-amber-500/30 transition-colors">
-                    <div className="flex items-center gap-3 flex-1">
-                        <div className="p-2 rounded-full bg-slate-700/50 text-slate-400">
-                            {['Arma', 'Armatura'].includes(item.type) ? <Icon path={I.Sword} size={16}/> : 
-                             (item.type === 'Oggetto Magico' ? <Icon path={I.Sparkles} size={16}/> : <Icon path={I.Backpack} size={16}/>)}
-                        </div>
-                        
+            if (viewMode === 'gallery') {
+                return (
+                    <div className={`bg-slate-800 rounded-xl border border-slate-700 p-3 hover:border-slate-500 transition-all group relative flex flex-col gap-2 ${isExpanded ? 'ring-1 ring-slate-500' : ''}`}>
                         {isEditing ? (
-                            <div className="flex flex-col gap-1 w-full max-w-[200px]">
-                                <input 
-                                    type="text" 
-                                    value={editData.name} 
-                                    onChange={(e) => setEditData({...editData, name: e.target.value})}
-                                    className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white outline-none focus:border-amber-500"
-                                />
-                                <select 
-                                    value={editData.type} 
-                                    onChange={(e) => setEditData({...editData, type: e.target.value})}
-                                    className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-slate-300 outline-none"
-                                >
+                             <div className="flex flex-col gap-2 h-full">
+                                <input type="text" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white w-full outline-none" placeholder="Nome" />
+                                <div className="flex gap-1">
+                                    <input type="number" value={editData.qty} onChange={e => setEditData({...editData, qty: parseInt(e.target.value)})} className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white w-12 outline-none" placeholder="Qtà" />
+                                    <select value={editData.type} onChange={e => setEditData({...editData, type: e.target.value})} className="bg-slate-900 border border-slate-600 rounded px-1 py-1 text-[10px] text-slate-300 outline-none flex-1">
+                                        {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                </div>
+                                <textarea value={editData.notes || ''} onChange={e => setEditData({...editData, notes: e.target.value})} className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white w-full outline-none flex-1 min-h-[60px]" placeholder="Note..." />
+                                <div className="flex justify-end gap-2">
+                                    <button onClick={() => setIsEditing(false)} className="text-slate-500 hover:text-white"><Icon path={I.Cross} size={14}/></button>
+                                    <button onClick={handleSave} className="text-green-500 hover:text-green-400"><Icon path={I.Check} size={14}/></button>
+                                </div>
+                             </div>
+                        ) : (
+                            <>
+                                <div className="flex justify-between items-start">
+                                    <div className={`p-2 rounded-lg bg-slate-900/50 ${getColor()}`}><Icon path={getIcon()} size={18}/></div>
+                                    <div className="text-right">
+                                        <div className="text-xs font-bold text-slate-500 uppercase">Q.tà</div>
+                                        <div className="text-lg font-bold text-white">{item.qty}</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="font-bold text-slate-200 text-sm leading-tight">{item.name}</div>
+                                    <div className="text-[10px] text-slate-500 uppercase">{item.type}</div>
+                                </div>
+                                {isExpanded && (
+                                    <div className="text-xs text-slate-400 italic mt-1 border-t border-slate-700/50 pt-2 whitespace-pre-wrap">{item.notes || "Nessuna nota."}</div>
+                                )}
+                                <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-700/30">
+                                    <div className="flex gap-2">
+                                        <button onClick={() => setIsEditing(true)} className="text-slate-500 hover:text-amber-500 transition-colors"><Icon path={I.Edit} size={14}/></button>
+                                        <button onClick={() => onDelete(item.id)} className="text-slate-500 hover:text-red-400 transition-colors"><Icon path={I.Trash} size={14}/></button>
+                                    </div>
+                                    <button onClick={() => setIsExpanded(!isExpanded)} className="text-slate-500 hover:text-white transition-colors">
+                                        <Icon path={isExpanded ? I.ChevronUp : I.ChevronDown} size={16}/>
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                );
+            }
+
+            // List View
+            return (
+                <div className={`bg-slate-800 rounded-lg border border-slate-700 overflow-hidden transition-all duration-200 ${isExpanded ? 'ring-1 ring-slate-500' : 'hover:border-slate-500'}`}>
+                    <div className="p-3 flex justify-between items-center cursor-pointer" onClick={() => !isEditing && setIsExpanded(!isExpanded)}>
+                        <div className="flex items-center gap-3 flex-1">
+                            <div className={`p-2 rounded-full bg-slate-700/50 ${getColor()}`}>
+                                <Icon path={getIcon()} size={16}/>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="font-bold text-slate-200 text-sm">{item.name}</span>
+                                <span className="text-xs text-slate-500 font-medium">{item.type}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
+                            {!isEditing && (
+                                <>
+                                    <div className="flex items-center bg-slate-900 rounded border border-slate-600 px-2 py-0.5">
+                                        <button onClick={() => onUpdate(item.id, { qty: Math.max(0, item.qty - 1) })} className="text-slate-400 hover:text-white"><Icon path={I.Minus} size={10}/></button>
+                                        <span className="mx-2 text-xs font-bold text-white w-4 text-center">{item.qty}</span>
+                                        <button onClick={() => onUpdate(item.id, { qty: item.qty + 1 })} className="text-slate-400 hover:text-white"><Icon path={I.Plus} size={10}/></button>
+                                    </div>
+                                    <div className="h-4 w-px bg-slate-700"></div>
+                                    <button onClick={() => setIsEditing(true)} className="text-slate-500 hover:text-amber-500 transition-colors"><Icon path={I.Edit} size={14}/></button>
+                                    <button onClick={() => onDelete(item.id)} className="text-slate-500 hover:text-red-400 transition-colors"><Icon path={I.Trash} size={14}/></button>
+                                    <div className={`text-slate-500 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`} onClick={() => setIsExpanded(!isExpanded)}>
+                                        <Icon path={I.ChevronDown} size={14}/>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Edit Mode */}
+                    {isEditing && (
+                        <div className="p-4 bg-slate-900 border-t border-slate-700">
+                            <div className="flex gap-2 mb-2">
+                                <input type="text" value={editData.name} onChange={(e) => setEditData({...editData, name: e.target.value})} className="flex-1 bg-slate-800 text-white text-sm p-2 rounded border border-slate-600 outline-none" />
+                                <input type="number" value={editData.qty} onChange={(e) => setEditData({...editData, qty: parseInt(e.target.value)})} className="w-16 bg-slate-800 text-white text-sm p-2 rounded border border-slate-600 outline-none no-spinner" />
+                                <select value={editData.type} onChange={(e) => setEditData({...editData, type: e.target.value})} className="bg-slate-800 text-white text-sm p-2 rounded border border-slate-600 outline-none">
                                     {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                 </select>
                             </div>
-                        ) : (
-                            <div>
-                                <div className="font-bold text-slate-200">{item.name}</div>
-                                <div className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border inline-block mt-1 ${getTagStyle(item.type)}`}>
-                                    {item.type}
-                                </div>
+                            <textarea value={editData.notes || ''} onChange={(e) => setEditData({...editData, notes: e.target.value})} placeholder="Note..." className="w-full bg-slate-800 text-white text-sm p-2 rounded border border-slate-600 outline-none min-h-[80px] mb-2" />
+                            <div className="flex justify-end gap-2">
+                                <Button variant="ghost" onClick={() => setIsEditing(false)} className="text-xs h-8">Annulla</Button>
+                                <Button onClick={handleSave} className="text-xs h-8">Salva</Button>
                             </div>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center bg-slate-900 rounded border border-slate-600 mr-2">
-                            <button 
-                                onClick={() => onUpdate(item.id, { qty: Math.max(0, item.qty - 1) })}
-                                className="px-2 py-1 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
-                            >
-                                <Icon path={I.Minus} size={12}/>
-                            </button>
-                            <span className="text-sm font-bold text-slate-200 w-8 text-center">{item.qty}</span>
-                            <button 
-                                onClick={() => onUpdate(item.id, { qty: item.qty + 1 })}
-                                className="px-2 py-1 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
-                            >
-                                <Icon path={I.Plus} size={12}/>
-                            </button>
                         </div>
+                    )}
 
-                        {isEditing ? (
-                             <button onClick={handleSave} className="p-2 rounded hover:bg-green-900/50 text-green-400 transition-colors">
-                                <Icon path={I.Check} size={16}/>
-                            </button>
-                        ) : (
-                            <button onClick={() => setIsEditing(true)} className="p-2 rounded hover:bg-slate-700 text-slate-500 hover:text-amber-500 transition-colors">
-                                <Icon path={I.Edit} size={16}/>
-                            </button>
-                        )}
-
-                        <button onClick={() => onDelete(item.id)} className="p-2 rounded hover:bg-red-900/50 text-slate-600 hover:text-red-400 transition-colors">
-                            <Icon path={I.Trash} size={16}/>
-                        </button>
-                    </div>
+                    {/* Expanded Content (Notes) */}
+                    {!isEditing && isExpanded && (
+                        <div className="bg-slate-900/50 p-3 border-t border-slate-700/50 text-sm text-slate-400 italic">
+                            {item.notes || "Nessuna nota."}
+                        </div>
+                    )}
                 </div>
             );
         };
+        
+        // ... (SpellItem, FeatItem, CharacterCard, etc. remain the same as previous)
+        // Only including parts that changed or need context. For full replacement, I'd paste everything again.
+        // Assuming user will copy the InventoryItem above into the existing structure if doing manual patching, 
+        // OR paste the full block below. I will provide the full block for clarity.
 
         const SpellItem = ({ spell, onDelete, onUpdate }) => {
             const [isEditing, setIsEditing] = useState(false);
