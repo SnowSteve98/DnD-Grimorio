@@ -24,28 +24,23 @@
         .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
         
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        
-        /* Utility classes */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Hide number input spinners */
+        /* Force remove spinners from number inputs */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
             -webkit-appearance: none; 
             margin: 0; 
         }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
+        input[type=number] { -moz-appearance: textfield; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-200 min-h-screen font-sans">
+<body class="bg-slate-950 text-slate-200 min-h-screen font-sans pb-10">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -53,15 +48,19 @@
         const SPELL_DB = [
             // Cantrips
             { n: "Dardo di Fuoco", l: 0, c: ["Mago", "Stregone", "Artefice"], d: "1d10 danni fuoco a distanza. Aumenta ai livelli 5, 11, 17." },
+            { n: "Spruzzo Acido", l: 0, c: ["Mago", "Stregone", "Artefice"], d: "1d6 acido a una o due creature entro 1.5m l'una dall'altra. TS Dex." },
+            { n: "Raggio di Gelo", l: 0, c: ["Mago", "Stregone", "Artefice"], d: "1d8 freddo e riduce velocità di 3m." },
+            { n: "Tocco Gelido", l: 0, c: ["Mago", "Stregone", "Warlock"], d: "1d8 necrotici, bersaglio non può recuperare PF." },
             { n: "Luce", l: 0, c: ["Bardo", "Chierico", "Mago", "Stregone", "Artefice"], d: "Oggetto emana luce intensa 6m e fioca 6m per 1 ora." },
             { n: "Mano Magica", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock", "Artefice"], d: "Mano spettrale manipola oggetti entro 9m." },
             { n: "Prestidigitazione", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Effetti sensoriali minori, accendere fuochi, pulire." },
+            { n: "Illusione Minore", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Crei suono o immagine di un oggetto immobile." },
+            { n: "Messaggio", l: 0, c: ["Bardo", "Mago", "Stregone"], d: "Sussurri un messaggio a creatura entro 36m." },
+            { n: "Amicizia", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Vantaggio su Carisma contro creatura non ostile. Diventa ostile dopo." },
             { n: "Deflagrazione Occulta", l: 0, c: ["Warlock"], d: "1d10 danni forza. Raggi multipli ai livelli alti." },
             { n: "Guida", l: 0, c: ["Chierico", "Druido", "Artefice"], d: "+1d4 a una prova di abilità." },
-            { n: "Messaggio", l: 0, c: ["Bardo", "Mago", "Stregone"], d: "Sussurri un messaggio a creatura entro 36m." },
-            { n: "Illusione Minore", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Crei suono o immagine di un oggetto immobile." },
             { n: "Riparare", l: 0, c: ["Bardo", "Chierico", "Druido", "Mago", "Artefice"], d: "Ripari una singola rottura in un oggetto." },
-            { n: "Tocco Gelido", l: 0, c: ["Mago", "Stregone", "Warlock"], d: "1d8 necrotici, bersaglio non può recuperare PF." },
+            { n: "Beffa Crudele", l: 0, c: ["Bardo"], d: "1d4 danni psichici e svantaggio al prossimo attacco." },
             
             // Level 1
             { n: "Dardo Incantato", l: 1, c: ["Mago", "Stregone"], d: "3 dardi infallibili, 1d4+1 forza ciascuno." },
@@ -70,27 +69,27 @@
             { n: "Cura Ferite", l: 1, c: ["Bardo", "Chierico", "Druido", "Paladino", "Ranger"], d: "Cura 1d8 + mod." },
             { n: "Parola Guaritrice", l: 1, c: ["Bardo", "Chierico", "Druido"], d: "Bonus action: cura 1d4 + mod a distanza." },
             { n: "Sonno", l: 1, c: ["Bardo", "Mago", "Stregone"], d: "Addormenta creature per 5d8 PF totali." },
-            { n: "Identificare", l: 1, c: ["Bardo", "Mago", "Artefice"], d: "Rivela proprietà magiche di un oggetto." },
-            { n: "Individuazione del Magico", l: 1, c: ["Tutti"], d: "Percepisci presenza di magia entro 9m." },
             { n: "Mani Brucianti", l: 1, c: ["Mago", "Stregone"], d: "Cono 4.5m, 3d6 fuoco, dimezza TS Des." },
             { n: "Dardo Tracciante", l: 1, c: ["Chierico"], d: "4d6 danni radiosi e vantaggio prossimo TxC." },
+            { n: "Identificare", l: 1, c: ["Bardo", "Mago", "Artefice"], d: "Rivela proprietà magiche di un oggetto." },
+            { n: "Individuazione del Magico", l: 1, c: ["Tutti"], d: "Percepisci presenza di magia entro 9m." },
 
             // Level 2
             { n: "Passo Velato", l: 2, c: ["Mago", "Stregone", "Warlock", "Ranger"], d: "Teletrasporto 9m come azione bonus." },
             { n: "Invisibilità", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock", "Artefice"], d: "Creatura invisibile finché non attacca/lancia incantesimi." },
-            { n: "Immobilizza Persone", l: 2, c: ["Bardo", "Chierico", "Druido", "Mago", "Stregone", "Warlock"], d: "Paralizza umanoide su TS Saggezza fallito." },
             { n: "Raggio Rovente", l: 2, c: ["Mago", "Stregone"], d: "3 raggi, 2d6 fuoco ciascuno." },
             { n: "Frantumare", l: 2, c: ["Bardo", "Chierico", "Mago", "Stregone", "Warlock"], d: "Sfera raggio 3m, 3d8 tuono, TS Cos dimezza. Danni a oggetti/costrutti." },
             { n: "Immagine Speculare", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Crea 3 copie illusorie che possono assorbire gli attacchi." },
             { n: "Cecità/Sordità", l: 2, c: ["Bardo", "Chierico", "Mago", "Stregone"], d: "Rende cieco o sordo un bersaglio. TS Cos." },
+            { n: "Immobilizza Persone", l: 2, c: ["Bardo", "Chierico", "Druido", "Mago", "Stregone", "Warlock"], d: "Paralizza umanoide su TS Saggezza fallito." },
 
             // Level 3
             { n: "Palla di Fuoco", l: 3, c: ["Mago", "Stregone"], d: "8d6 fuoco in raggio 6m." },
             { n: "Controincantesimo", l: 3, c: ["Mago", "Stregone", "Warlock"], d: "Interrompi incantesimo avversario." },
             { n: "Volare", l: 3, c: ["Mago", "Stregone", "Warlock", "Artefice"], d: "Velocità volo 18m." },
-            { n: "Rianimare Morti", l: 3, c: ["Bardo", "Chierico", "Paladino"], d: "Ritorna in vita creatura morta da <1 min." },
-            { n: "Spiriti Guardiani", l: 3, c: ["Chierico", "Paladino"], d: "Aura dannosa 3d8 attorno a te." },
             { n: "Velocità", l: 3, c: ["Mago", "Stregone", "Artefice"], d: "+2 CA, raddoppia velocità, azione extra." },
+            { n: "Spiriti Guardiani", l: 3, c: ["Chierico", "Paladino"], d: "Aura dannosa 3d8 attorno a te." },
+            { n: "Rianimare Morti", l: 3, c: ["Bardo", "Chierico", "Paladino"], d: "Ritorna in vita creatura morta da <1 min." },
             
             // Level 4
             { n: "Metamorfosi", l: 4, c: ["Bardo", "Druido", "Mago", "Stregone"], d: "Trasforma creatura in bestia." },
@@ -101,8 +100,25 @@
             { n: "Guarigione Superiore", l: 5, c: ["Bardo", "Chierico", "Druido"], d: "Cura 4d8 + mod a creature multiple." }
         ];
 
-        // --- DATA: FEATURES DB (Expanded with Subcategories) ---
+        // --- DATA: FEATURES DB (Expanded with Subcategories & Correct Types) ---
         const FEATURE_DB = [
+            // SOTTOCLASSI (ORIGINI) - TYPE: "Origine"
+            { n: "Origine: Discendenza Draconica", type: "Origine", req: "Stregone", d: "+1 PF per livello, pelle scagliosa (CA 13+Des)." },
+            { n: "Origine: Magia Selvaggia", type: "Origine", req: "Stregone", d: "Possibilità di effetti casuali (Surge) dopo incantesimi di lv 1+." },
+            { n: "Origine: Anima Divina", type: "Origine", req: "Stregone", d: "Accesso alla lista incantesimi da Chierico." },
+            { n: "Patto: Il Signore Fatato", type: "Origine", req: "Warlock", d: "Abilità di charme e illusione." },
+            { n: "Patto: L'Immondo", type: "Origine", req: "Warlock", d: "Guadagni PF temporanei quando uccidi nemici." },
+            { n: "Patto: Il Grande Antico", type: "Origine", req: "Warlock", d: "Telepatia e magie mentali." },
+            { n: "Dominio della Vita", type: "Origine", req: "Chierico", d: "Bonus cure: 2 + livello incantesimo." },
+            { n: "Dominio della Guerra", type: "Origine", req: "Chierico", d: "Azione bonus per fare un attacco extra (limitato)." },
+            { n: "Dominio della Luce", type: "Origine", req: "Chierico", d: "Bagliore protettivo per dare svantaggio agli attaccanti." },
+            { n: "Giuramento di Devozione", type: "Origine", req: "Paladino", d: "Aura sacra, scaccia immondi." },
+            { n: "Giuramento della Vendetta", type: "Origine", req: "Paladino", d: "Vantaggio contro nemico giurato." },
+            { n: "Tradizione: Invocazione", type: "Origine", req: "Mago", d: "Scolpisci incantesimi per non colpire alleati." },
+            { n: "Archetipo: Campione", type: "Origine", req: "Guerriero", d: "Critico con 19 o 20." },
+            { n: "Archetipo: Maestro di Battaglia", type: "Origine", req: "Guerriero", d: "Manovre tattiche e dadi di superiorità." },
+            { n: "Archetipo: Furfante", type: "Origine", req: "Ladro", d: "Mani veloci, uso oggetti come bonus action." },
+
             // RAZZIALI
             { n: "Scurovisione", type: "Razziale", req: "Tutti", d: "Vedi al buio entro 18m come se fosse luce fioca." },
             { n: "Mani Guaritrici", type: "Razziale", req: "Aasimar", d: "Azione: tocchi creatura e cura pari al tuo livello. 1 volta/riposo lungo." },
@@ -110,17 +126,17 @@
             { n: "Resistenza Infernale", type: "Razziale", req: "Tiefling", d: "Hai resistenza ai danni da fuoco." },
             { n: "Retaggio Fatato", type: "Razziale", req: "Elfo", d: "Vantaggio ai TS contro charme, immunità al sonno magico." },
             { n: "Resilienza Nanica", type: "Razziale", req: "Nano", d: "Vantaggio ai TS veleno e resistenza danni veleno." },
-            { n: "Fortunato (Halfling)", type: "Razziale", req: "Halfling", d: "Ritira gli 1 naturali su TxC, abilità e TS." },
+            { n: "Fortunato", type: "Razziale", req: "Halfling", d: "Ritira gli 1 naturali su TxC, abilità e TS." },
             { n: "Soffio del Drago", type: "Razziale", req: "Dragonide", d: "Cono o linea di danno elementale. TS Dex o Con." },
             
-            // STILI DI COMBATTIMENTO (Guerriero, Paladino, Ranger)
+            // STILI DI COMBATTIMENTO - TYPE: "Classe"
             { n: "Stile: Architettura", type: "Classe", req: "Tutti", d: "+2 ai TxC con armi a distanza." },
             { n: "Stile: Difesa", type: "Classe", req: "Tutti", d: "+1 alla CA quando indossi armatura." },
             { n: "Stile: Duellare", type: "Classe", req: "Tutti", d: "+2 danni con armi ad una mano se l'altra è libera." },
             { n: "Stile: Armi Grandi", type: "Classe", req: "Tutti", d: "Ritira 1 o 2 ai danni con armi a due mani." },
             { n: "Stile: Protezione", type: "Classe", req: "Tutti", d: "Reazione per dare svantaggio a un attacco contro un alleato vicino (richiede scudo)." },
 
-            // METAMAGIA (Stregone)
+            // METAMAGIA - TYPE: "Classe"
             { n: "Metamagia: Accurata", type: "Classe", req: "Stregone", d: "1 PS: I bersagli superano automaticamente il TS (es. Palla di Fuoco sugli amici)." },
             { n: "Metamagia: Distante", type: "Classe", req: "Stregone", d: "1 PS: Raddoppia la gittata o rendi a contatto 9m." },
             { n: "Metamagia: Potenziata", type: "Classe", req: "Stregone", d: "1 PS: Ritira dadi danno pari a Carisma." },
@@ -130,17 +146,12 @@
             { n: "Metamagia: Sottile", type: "Classe", req: "Stregone", d: "1 PS: Lancia senza componenti V o S." },
             { n: "Metamagia: Raddoppiata", type: "Classe", req: "Stregone", d: "PS pari a livello spell: Colpisci un secondo bersaglio." },
 
-            // PATTI (Warlock)
-            { n: "Patto della Lama", type: "Classe", req: "Warlock", d: "Puoi evocare un'arma magica nella tua mano." },
-            { n: "Patto della Catena", type: "Classe", req: "Warlock", d: "Ottieni un famiglio potenziato (Imp, Quasit, ecc)." },
-            { n: "Patto del Tomo", type: "Classe", req: "Warlock", d: "Ottieni un libro delle ombre e 3 trucchetti da qualsiasi lista." },
+            // DONI DEL PATTO - TYPE: "Classe"
+            { n: "Dono: Patto della Lama", type: "Classe", req: "Warlock", d: "Puoi evocare un'arma magica nella tua mano." },
+            { n: "Dono: Patto della Catena", type: "Classe", req: "Warlock", d: "Ottieni un famiglio potenziato (Imp, Quasit, ecc)." },
+            { n: "Dono: Patto del Tomo", type: "Classe", req: "Warlock", d: "Ottieni un libro delle ombre e 3 trucchetti da qualsiasi lista." },
 
-            // DOMINI (Chierico - Esempi)
-            { n: "Dominio della Vita", type: "Classe", req: "Chierico", d: "Bonus cure: 2 + livello incantesimo." },
-            { n: "Dominio della Guerra", type: "Classe", req: "Chierico", d: "Azione bonus per fare un attacco extra (limitato)." },
-            { n: "Dominio della Luce", type: "Classe", req: "Chierico", d: "Bagliore protettivo per dare svantaggio agli attaccanti." },
-
-            // ALTRI PRIVILEGI DI CLASSE
+            // BASE CLASS FEATURES - TYPE: "Classe"
             { n: "Ira", type: "Classe", req: "Barbaro", d: "Vantaggio prove Forza, bonus danni, resistenza contundente/tagliente/perforante." },
             { n: "Difesa Senza Armatura", type: "Classe", req: "Barbaro", d: "CA = 10 + Des + Cos se non indossi armatura." },
             { n: "Ispirazione Bardica", type: "Classe", req: "Bardo", d: "Bonus Action: dai un d6 (o sup) a un alleato per prove/txc/ts." },
@@ -154,7 +165,7 @@
             { n: "Azione Scaltra", type: "Classe", req: "Ladro", d: "Bonus action per Scattare, Disimpegnarsi o Nascondersi." },
             { n: "Recupero Arcano", type: "Classe", req: "Mago", d: "Recuperi slot incantesimo durante riposo breve." },
             
-            // TALENTI
+            // TALENTI - TYPE: "Talento"
             { n: "Fortunato", type: "Talento", req: "Tutti", d: "3 punti fortuna al giorno per ritirare dadi." },
             { n: "Tiratore Scelto", type: "Talento", req: "Tutti", d: "Ignora copertura, -5 TxC / +10 Danni a distanza." },
             { n: "Maestro d'Armi Possenti", type: "Talento", req: "Tutti", d: "Critico/Kill dà attacco extra. -5 TxC / +10 Danni mischia." },
@@ -166,7 +177,7 @@
             { n: "Robusto", type: "Talento", req: "Tutti", d: "+2 PF per ogni livello." }
         ];
 
-        // --- COMPONENTS ---
+        // --- COMPONENTS & ICONS ---
         class ErrorBoundary extends React.Component {
             constructor(props) { super(props); this.state = { hasError: false }; }
             static getDerivedStateFromError(error) { return { hasError: true }; }
@@ -322,108 +333,79 @@
 
         const DynamicCounter = ({ label, current, max, onChangeCurrent, onChangeMax, color = "text-slate-200", icon: Icon }) => {
             return (
-                <div className="bg-slate-900 p-4 rounded-xl border border-slate-700 flex flex-col justify-between h-full relative overflow-hidden group">
+                <div className="bg-slate-900 p-4 rounded-xl border border-slate-700 flex flex-col justify-between h-full relative overflow-hidden group shadow-lg">
                     <div className={`flex items-center gap-2 font-bold mb-2 uppercase text-xs tracking-widest ${color} opacity-80`}>
                         {Icon && <Icon size={16} />} {label}
                     </div>
-                    <div className="flex items-end justify-between z-10">
-                        <div className="flex items-center gap-3">
-                            <button onClick={() => onChangeCurrent(Math.max(0, current - 1))} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"><Minus size={16}/></button>
-                            <span className={`text-4xl font-black ${color} tracking-tight`}>{current}</span>
-                            <button onClick={() => onChangeCurrent(current + 1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"><Plus size={16}/></button>
-                        </div>
-                        <div className="flex flex-col items-end mb-1">
-                            <span className="text-[10px] text-slate-500 font-bold uppercase">Massimo</span>
-                            <input type="number" className="w-12 text-right bg-transparent text-lg font-bold text-slate-500 outline-none focus:text-slate-300 no-spinner" value={max} onChange={(e) => onChangeMax(parseInt(e.target.value) || 0)} />
+                    <div className="flex items-center justify-between z-10 my-2">
+                        <button onClick={() => onChangeCurrent(Math.max(0, current - 1))} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 border border-slate-600 hover:bg-slate-700 text-slate-400 hover:text-white transition-all active:scale-95 shadow-md"><Minus size={18}/></button>
+                        <span className={`text-5xl font-black ${color} tracking-tighter leading-none`}>{current}</span>
+                        <button onClick={() => onChangeCurrent(current + 1)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 border border-slate-600 hover:bg-slate-700 text-slate-400 hover:text-white transition-all active:scale-95 shadow-md"><Plus size={18}/></button>
+                    </div>
+                    <div className="flex justify-end w-full pt-2 border-t border-slate-800 z-10">
+                        <div className="flex items-center gap-2 bg-slate-800/50 px-2 py-1 rounded-lg">
+                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">MAX</span>
+                            <input type="number" className="w-8 text-right bg-transparent text-sm font-bold text-slate-400 outline-none focus:text-slate-200 border-b border-transparent focus:border-slate-600 transition-colors no-spinner" value={max} onChange={(e) => onChangeMax(parseInt(e.target.value) || 0)} />
                         </div>
                     </div>
-                    <div className={`absolute -right-4 -bottom-4 opacity-5 ${color}`}>{Icon && <Icon size={80} />}</div>
+                    <div className={`absolute -right-6 -bottom-6 opacity-5 pointer-events-none ${color}`}>{Icon && <Icon size={120} />}</div>
                 </div>
             );
         };
 
+        const SpellSlotCounter = ({ level, current, max, onChange }) => (
+            <div className="flex flex-col items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700/50 h-full justify-between">
+                <span className="text-[10px] text-slate-500 font-bold uppercase mb-2">Liv {level}</span>
+                <div className="flex flex-col gap-2 w-full items-center">
+                    <span className="text-3xl font-black text-white leading-none">{current}</span>
+                    <div className="flex w-full justify-between gap-1 mt-1">
+                        <button onClick={() => onChange('current', Math.max(0, current - 1))} className="flex-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300 text-xs py-1 transition-colors">-</button>
+                        <button onClick={() => onChange('current', current + 1)} className="flex-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300 text-xs py-1 transition-colors">+</button>
+                    </div>
+                    <div className="w-full h-px bg-slate-700 my-1"></div>
+                    <div className="flex items-center justify-center gap-1 text-[10px] text-slate-500 font-bold">MAX <input type="number" className="w-6 bg-transparent text-center text-slate-400 outline-none focus:text-white no-spinner" value={max} onChange={(e) => onChange('max', parseInt(e.target.value)||0)} /></div>
+                </div>
+            </div>
+        );
+
         const InventoryItem = ({ item, onDelete, onUpdate }) => {
             const [isEditing, setIsEditing] = useState(false);
-            const [editData, setEditData] = useState({ name: item.name, type: item.type });
-
-            const handleSave = () => {
-                onUpdate(item.id, editData);
-                setIsEditing(false);
-            };
-
-            const getTagStyle = (type) => {
-                if (type === 'Pozione') return 'text-pink-400 bg-pink-500/10 border-pink-500/20';
-                if (type === 'Oggetto Magico') return 'text-purple-400 bg-purple-500/10 border-purple-500/20';
-                if (type === 'Oggetto Chiave') return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-                if (type === 'Strumento') return 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20';
-                return 'text-slate-400 bg-slate-800 border-slate-700';
-            };
+            const [editData, setEditData] = useState({ ...item });
+            const handleSave = () => { onUpdate(item.id, editData); setIsEditing(false); };
+            const getIcon = () => ['Arma', 'Armatura'].includes(item.type) ? Sword : (item.type === 'Oggetto Magico' ? Sparkles : Backpack);
+            const getColor = () => item.type === 'Oggetto Magico' ? 'text-purple-400' : (item.type === 'Pozione' ? 'text-pink-400' : 'text-slate-400');
+            const [isExpanded, setIsExpanded] = useState(false);
 
             return (
-                <div className="flex items-center justify-between bg-slate-800 p-3 rounded border border-slate-700 hover:border-amber-500/30 transition-colors">
-                    <div className="flex items-center gap-3 flex-1">
-                        <div className="p-2 rounded-full bg-slate-700/50 text-slate-400">
-                            {['Arma', 'Armatura'].includes(item.type) ? <Sword size={16}/> : 
-                             (item.type === 'Oggetto Magico' ? <Sparkles size={16} className="text-purple-400"/> : <Backpack size={16}/>)}
+                <div className={`bg-slate-800 rounded-lg border border-slate-700 overflow-hidden transition-all duration-200 ${isExpanded ? 'ring-1 ring-slate-600' : 'hover:border-slate-600'}`}>
+                    <div className="p-3 flex justify-between items-center cursor-pointer" onClick={() => !isEditing && setIsExpanded(!isExpanded)}>
+                        <div className="flex items-center gap-3 flex-1">
+                            <div className={`p-2 rounded-full bg-slate-700/50 ${getColor()}`}>{React.createElement(getIcon(), {size: 18})}</div>
+                            <div className="flex flex-col"><span className="font-bold text-slate-200 text-sm">{item.name}</span><span className="text-xs text-slate-500 font-medium">{item.type} (x{item.qty})</span></div>
                         </div>
-                        
-                        {isEditing ? (
-                            <div className="flex flex-col gap-1 w-full max-w-[200px]">
-                                <input 
-                                    type="text" 
-                                    value={editData.name} 
-                                    onChange={(e) => setEditData({...editData, name: e.target.value})}
-                                    className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white outline-none focus:border-amber-500"
-                                />
-                                <select 
-                                    value={editData.type} 
-                                    onChange={(e) => setEditData({...editData, type: e.target.value})}
-                                    className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-slate-300 outline-none"
-                                >
-                                    {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                                </select>
-                            </div>
-                        ) : (
-                            <div>
-                                <div className="font-bold text-slate-200">{item.name}</div>
-                                <div className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border inline-block mt-1 ${getTagStyle(item.type)}`}>
-                                    {item.type}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center bg-slate-900 rounded border border-slate-600 mr-2">
-                            <button 
-                                onClick={() => onUpdate(item.id, { qty: Math.max(0, item.qty - 1) })}
-                                className="px-2 py-1 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
-                            >
-                                <Minus size={12}/>
-                            </button>
-                            <span className="text-sm font-bold text-slate-200 w-8 text-center">{item.qty}</span>
-                            <button 
-                                onClick={() => onUpdate(item.id, { qty: item.qty + 1 })}
-                                className="px-2 py-1 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
-                            >
-                                <Plus size={12}/>
-                            </button>
+                        <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                            {!isEditing && <>
+                                <button onClick={() => setIsEditing(true)} className="p-2 text-slate-500 hover:text-amber-500 transition-colors"><Edit size={16}/></button>
+                                <button onClick={() => onDelete(item.id)} className="p-2 text-slate-500 hover:text-red-400 transition-colors"><Trash2 size={16}/></button>
+                                <div className={`text-slate-500 transform transition-transform duration-200 ml-1 ${isExpanded ? 'rotate-180' : ''}`} onClick={() => setIsExpanded(!isExpanded)}><ChevronDown size={16} /></div>
+                            </>}
                         </div>
-
-                        {isEditing ? (
-                             <button onClick={handleSave} className="p-2 rounded hover:bg-green-900/50 text-green-400 transition-colors">
-                                <Check size={16}/>
-                            </button>
-                        ) : (
-                            <button onClick={() => setIsEditing(true)} className="p-2 rounded hover:bg-slate-700 text-slate-500 hover:text-amber-500 transition-colors">
-                                <Edit size={16}/>
-                            </button>
-                        )}
-
-                        <button onClick={() => onDelete(item.id)} className="p-2 rounded hover:bg-red-900/50 text-slate-600 hover:text-red-400 transition-colors">
-                            <Trash2 size={16}/>
-                        </button>
                     </div>
+                    {isEditing && (
+                        <div className="p-4 bg-slate-900 border-t border-slate-700 border-b border-amber-500/30">
+                            <div className="space-y-3">
+                                <div className="flex gap-2"><input type="text" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} className="flex-1 bg-slate-800 p-2 rounded text-sm text-white border border-slate-600 outline-none" /><input type="number" value={editData.qty} onChange={e => setEditData({...editData, qty: parseInt(e.target.value)})} className="w-16 bg-slate-800 p-2 rounded text-sm text-white border border-slate-600 outline-none no-spinner" /></div>
+                                <div className="flex gap-2"><select value={editData.type} onChange={e => setEditData({...editData, type: e.target.value})} className="flex-1 bg-slate-800 p-2 rounded text-sm text-white border border-slate-600 outline-none">{ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
+                                <textarea value={editData.notes || ''} onChange={e => setEditData({...editData, notes: e.target.value})} placeholder="Note, effetti, dettagli..." className="w-full bg-slate-800 p-2 rounded text-sm text-white border border-slate-600 outline-none min-h-[80px]" />
+                            </div>
+                            <div className="flex justify-end gap-2 mt-3"><Button variant="ghost" onClick={() => setIsEditing(false)} className="text-xs">Annulla</Button><Button variant="primary" onClick={handleSave} className="text-xs">Salva Modifiche</Button></div>
+                        </div>
+                    )}
+                    {!isEditing && (
+                        <div className={`bg-slate-900/50 border-t border-slate-700/50 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-96 opacity-100 p-3' : 'max-h-0 opacity-0'}`}>
+                            {item.notes ? <p className="text-sm text-slate-300 italic leading-relaxed whitespace-pre-wrap">{item.notes}</p> : <p className="text-xs text-slate-500 italic">Nessuna descrizione o nota aggiuntiva.</p>}
+                        </div>
+                    )}
                 </div>
             );
         };
@@ -434,25 +416,21 @@
             const [editData, setEditData] = useState({ name: spell.name, level: spell.level, desc: spell.desc || "" });
             const handleSave = () => { onUpdate(spell.id, editData); setIsEditing(false); };
             return (
-                <div className="bg-slate-800 rounded border border-slate-700 overflow-hidden group hover:border-purple-500/50 transition-colors">
+                <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden group hover:border-purple-500/50 transition-colors">
                     <div className="p-3 flex justify-between items-center cursor-pointer" onClick={() => !isEditing && setIsExpanded(!isExpanded)}>
-                        {isEditing ? (
-                            <div className="flex gap-2 items-center flex-1" onClick={e => e.stopPropagation()}>
-                                <input type="text" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs text-white flex-1" />
-                                <button onClick={handleSave} className="text-green-400"><Check size={16}/></button>
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-2">
-                                <div className="text-slate-500">{isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</div>
-                                <span className={`text-sm font-medium ${spell.level === 0 ? "text-slate-300" : "text-purple-300"}`}>{spell.name}</span>
-                            </div>
-                        )}
-                        {!isEditing && (
-                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                <button onClick={(e) => {e.stopPropagation(); setIsEditing(true)}} className="text-slate-500 hover:text-amber-500"><Edit size={14}/></button>
-                                <button onClick={(e) => {e.stopPropagation(); onDelete(spell.id)}} className="text-slate-600 hover:text-red-400"><Trash2 size={14}/></button>
-                            </div>
-                        )}
+                        <div className="flex items-center gap-3 flex-1">
+                            <div className={`p-2 rounded-full bg-slate-700/50 ${spell.level === 0 ? "text-slate-400" : "text-purple-400"}`}><Sparkles size={18}/></div>
+                            <div className="flex flex-col"><span className="font-bold text-slate-200 text-sm">{spell.name}</span><span className="text-xs text-slate-500 font-medium">{spell.level === 0 ? "Trucchetto" : `Livello ${spell.level}`}</span></div>
+                        </div>
+                        <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                            {!isEditing && (
+                                <>
+                                    <button onClick={() => setIsEditing(true)} className="p-2 text-slate-500 hover:text-amber-500 transition-colors"><Edit size={16}/></button>
+                                    <button onClick={() => onDelete(spell.id)} className="p-2 text-slate-500 hover:text-red-400 transition-colors"><Trash2 size={16}/></button>
+                                    <div className={`text-slate-500 transform transition-transform duration-200 ml-1 ${isExpanded ? 'rotate-180' : ''}`} onClick={() => setIsExpanded(!isExpanded)}><ChevronDown size={16} /></div>
+                                </>
+                            )}
+                        </div>
                     </div>
                     {isExpanded && (
                         <div className="px-3 pb-3 pt-0 border-t border-slate-700/50 bg-slate-800/50">
@@ -467,21 +445,76 @@
             );
         };
 
+        const FeatItem = ({ feat, onDelete, onUpdate }) => {
+            const [isEditing, setIsEditing] = useState(false);
+            const [isExpanded, setIsExpanded] = useState(false);
+            const [editData, setEditData] = useState({ ...feat });
+            const handleSave = () => { onUpdate(feat.id, editData); setIsEditing(false); };
+            const getColor = () => { if(feat.source === 'Razziale') return 'text-green-400'; if(feat.source === 'Classe' || feat.source === 'Origine') return 'text-amber-400'; return 'text-blue-400'; };
+            return (
+                 <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden transition-all duration-200 hover:border-slate-600">
+                    <div className="p-3 flex justify-between items-center cursor-pointer" onClick={() => !isEditing && setIsExpanded(!isExpanded)}>
+                        <div className="flex items-center gap-3 flex-1">
+                            <div className={`p-2 rounded-full bg-slate-700/50 ${getColor()}`}><Star size={18}/></div>
+                            <div className="flex flex-col"><span className="font-bold text-slate-200 text-sm">{feat.name}</span><span className="text-xs text-slate-500 font-medium">{feat.source}</span></div>
+                        </div>
+                        <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                            {!isEditing && (
+                                <>
+                                    <button onClick={() => setIsEditing(true)} className="p-2 text-slate-500 hover:text-amber-500 transition-colors"><Edit size={16}/></button>
+                                    <button onClick={() => onDelete(feat.id)} className="p-2 text-slate-500 hover:text-red-400 transition-colors"><Trash2 size={16}/></button>
+                                    <div className={`text-slate-500 transform transition-transform duration-200 ml-1 ${isExpanded ? 'rotate-180' : ''}`} onClick={() => setIsExpanded(!isExpanded)}><ChevronDown size={16} /></div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                     {isEditing && (
+                        <div className="p-4 bg-slate-900 border-t border-slate-700 border-b border-amber-500/30">
+                            <div className="space-y-3">
+                                <div className="flex gap-2"><input type="text" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} className="flex-1 bg-slate-800 p-2 rounded text-sm text-white border border-slate-600 outline-none" /><select value={editData.source} onChange={e => setEditData({...editData, source: e.target.value})} className="w-32 bg-slate-800 p-2 rounded text-sm text-white border border-slate-600 outline-none"><option value="Classe">Classe</option><option value="Origine">Origine</option><option value="Razza">Razza</option><option value="Talento">Talento</option><option value="Altro">Altro</option></select></div>
+                                <textarea value={editData.desc} onChange={e => setEditData({...editData, desc: e.target.value})} className="w-full bg-slate-800 p-2 rounded text-sm text-white border border-slate-600 outline-none min-h-[100px]" />
+                            </div>
+                            <div className="flex justify-end gap-2 mt-3"><Button variant="ghost" onClick={() => setIsEditing(false)} className="text-xs">Annulla</Button><Button variant="primary" onClick={handleSave} className="text-xs">Salva Modifiche</Button></div>
+                        </div>
+                    )}
+                    {!isEditing && (
+                        <div className={`bg-slate-900/50 border-t border-slate-700/50 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-96 opacity-100 p-3' : 'max-h-0 opacity-0'}`}>
+                            {feat.desc ? <p className="text-sm text-slate-300 italic leading-relaxed whitespace-pre-wrap">{feat.desc}</p> : <p className="text-xs text-slate-500 italic">Nessuna descrizione.</p>}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
         const CharacterCard = ({ character, onEdit, onDelete, viewMode }) => {
             const ClassIconObj = CLASSES.find(c => c.name === character.class)?.icon || User;
+            const displayHpCurrent = character.hpCurrent !== undefined ? character.hpCurrent : character.hpMax;
+
             if (viewMode === 'list') {
                 return (
-                    <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden hover:shadow-xl hover:border-amber-500/30 transition-all duration-300 flex items-stretch">
-                        <div className="w-24 bg-slate-900 relative shrink-0">{character.imageUrl ? <img src={character.imageUrl} alt={character.name} className="w-full h-full object-cover opacity-80" /> : <div className="w-full h-full flex items-center justify-center"><ClassIconObj size={32} className="text-slate-700" /></div>}</div>
-                        <div className="p-4 flex-1 flex flex-col justify-center"><h3 className="text-lg font-bold text-white truncate">{character.name || "Senza Nome"}</h3><p className="text-xs text-amber-400 font-medium mb-2">{character.race} {character.class} (Lv. {character.level})</p><div className="flex gap-4 text-xs text-slate-400"><div><span className="font-bold text-slate-200">{character.hpCurrent}/{character.hpMax}</span> HP</div><div><span className="font-bold text-slate-200">{character.ac}</span> CA</div></div></div>
-                        <div className="flex flex-col border-l border-slate-700"><button onClick={() => onEdit(character)} className="flex-1 px-4 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"><Edit size={18} /></button><button onClick={() => onDelete(character.id)} className="flex-1 px-4 hover:bg-red-900/30 text-slate-400 hover:text-red-400 transition-colors border-t border-slate-700"><Trash2 size={18} /></button></div>
+                    <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden hover:shadow-xl hover:border-amber-500/30 transition-all duration-300 flex items-stretch h-24">
+                        <div className="w-24 bg-slate-900 relative shrink-0">
+                            {character.imageUrl ? <img src={character.imageUrl} alt={character.name} className="w-full h-full object-cover opacity-80" /> : <div className="w-full h-full flex items-center justify-center"><ClassIconObj size={32} className="text-slate-700" /></div>}
+                        </div>
+                        <div className="p-3 flex-1 flex flex-col justify-center min-w-0">
+                            <h3 className="text-lg font-bold text-white truncate">{character.name || "Senza Nome"}</h3>
+                            <p className="text-xs text-amber-400 font-medium mb-1 truncate">{character.race} {character.class} (Lv. {character.level})</p>
+                            <div className="flex gap-3 text-xs text-slate-400">
+                                <div><span className="font-bold text-slate-200">{displayHpCurrent}/{character.hpMax}</span> HP</div>
+                                <div><span className="font-bold text-slate-200">{character.ac}</span> CA</div>
+                            </div>
+                        </div>
+                        <div className="flex flex-col border-l border-slate-700 w-12">
+                            <button onClick={() => onEdit(character)} className="flex-1 flex items-center justify-center hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"><Edit size={16} /></button>
+                            <button onClick={() => onDelete(character.id)} className="flex-1 flex items-center justify-center hover:bg-red-900/30 text-slate-400 hover:text-red-400 transition-colors border-t border-slate-700"><Trash2 size={16} /></button>
+                        </div>
                     </div>
                 );
             }
             return (
                 <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden hover:shadow-xl hover:shadow-amber-900/10 hover:border-amber-500/30 transition-all duration-300 group">
                     <div className="h-48 w-full bg-slate-900 relative overflow-hidden">{character.imageUrl ? <img src={character.imageUrl} alt={character.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" /> : <div className="w-full h-full flex items-center justify-center bg-slate-900"><ClassIconObj size={64} className="text-slate-700 group-hover:text-amber-600 transition-colors" /></div>}<div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-900 to-transparent p-4 pt-12"><h3 className="text-xl font-bold text-white truncate">{character.name || "Senza Nome"}</h3><p className="text-sm text-amber-400 font-medium">{character.race} {character.class} (Lv. {character.level})</p></div></div>
-                    <div className="p-4 grid grid-cols-3 gap-2 border-b border-slate-700/50"><div className="text-center"><div className="text-xs text-slate-500">HP</div><div className="text-slate-200 font-bold">{character.hpCurrent}/{character.hpMax}</div></div><div className="text-center border-l border-slate-700"><div className="text-xs text-slate-500">CA</div><div className="text-slate-200 font-bold">{character.ac}</div></div><div className="text-center border-l border-slate-700"><div className="text-xs text-slate-500">Iniz</div><div className="text-slate-200 font-bold">{getModifier(character.stats.Destrezza)}</div></div></div>
+                    <div className="p-4 grid grid-cols-3 gap-2 border-b border-slate-700/50"><div className="text-center"><div className="text-xs text-slate-500">HP</div><div className="text-slate-200 font-bold">{displayHpCurrent}/{character.hpMax}</div></div><div className="text-center border-l border-slate-700"><div className="text-xs text-slate-500">CA</div><div className="text-slate-200 font-bold">{character.ac}</div></div><div className="text-center border-l border-slate-700"><div className="text-xs text-slate-500">Iniz</div><div className="text-slate-200 font-bold">{getModifier(character.stats.Destrezza)}</div></div></div>
                     <div className="p-3 flex justify-between bg-slate-800"><Button variant="ghost" onClick={() => onDelete(character.id)} className="text-xs text-red-400 hover:text-red-300"><Trash2 size={16} /> Elimina</Button><Button variant="secondary" onClick={() => onEdit(character)} className="text-xs">Apri Scheda</Button></div>
                 </div>
             );
@@ -574,15 +607,23 @@
             const [selFeat, setSelFeat] = useState('');
             const [featName, setFeatName] = useState('');
             const [featDesc, setFeatDesc] = useState('');
-            const [newItem, setNewItem] = useState({ name: '', type: 'Generico', qty: 1 });
+            const [newItem, setNewItem] = useState({ name: '', type: 'Generico', qty: 1, notes: '' });
             const fileInputRef = useRef(null);
 
             // Filtro Inventario
             const [invFilter, setInvFilter] = useState('Tutti');
             const [invSort, setInvSort] = useState('Nome');
 
+            // View toggle for tabs (if we wanted to implement it per tab, but for now we keep it simple as requested)
+            // Just using standard list for items/spells/feats as it's cleaner.
+
             useEffect(() => {
-                setChar(prev => ({ ...prev, hpCurrent: prev.hpCurrent !== undefined ? prev.hpCurrent : prev.hpMax, abilities: prev.abilities || [] }));
+                setChar(prev => ({ 
+                    ...prev, 
+                    hpCurrent: prev.hpCurrent !== undefined ? prev.hpCurrent : prev.hpMax, 
+                    abilities: prev.abilities || [],
+                    inventory: prev.inventory || []
+                }));
             }, []);
 
             const addSpell = () => {
@@ -599,6 +640,20 @@
                 if(!f.name) return;
                 setChar(prev => ({...prev, abilities: [...prev.abilities || [], f]}));
                 setFeatName(''); setFeatDesc(''); setSelFeat('');
+            };
+            
+            const deleteFeat = (id) => {
+                setChar(prev => ({
+                    ...prev,
+                    abilities: prev.abilities.filter(f => f.id !== id)
+                }));
+            };
+
+            const updateFeat = (id, updates) => {
+                setChar(prev => ({
+                    ...prev,
+                    abilities: prev.abilities.map(f => f.id === id ? { ...f, ...updates } : f)
+                }));
             };
 
             const handleImageUpload = (e) => {
@@ -623,8 +678,15 @@
 
             const addItem = () => {
                 if (!newItem.name) return;
-                setChar(prev => ({ ...prev, inventory: [...(prev.inventory || []), { ...newItem, id: Date.now() }] }));
-                setNewItem({ name: '', type: 'Generico', qty: 1 });
+                setChar(prev => ({ ...prev, inventory: [...prev.inventory, { ...newItem, id: Date.now() }] }));
+                setNewItem({ name: '', type: 'Generico', qty: 1, notes: '' });
+            };
+
+            const removeItem = (id) => {
+                setChar(prev => ({
+                    ...prev,
+                    inventory: prev.inventory.filter(i => i.id !== id)
+                }));
             };
 
             const updateItem = (id, updates) => {
@@ -633,11 +695,26 @@
                     inventory: prev.inventory.map(item => item.id === id ? { ...item, ...updates } : item)
                 }));
             };
+            
+            const removeSpell = (id) => {
+                setChar(prev => ({
+                    ...prev,
+                    spells: prev.spells.filter(s => s.id !== id)
+                }));
+            };
+            
+            const updateSpell = (id, updates) => {
+                setChar(prev => ({
+                    ...prev,
+                    spells: prev.spells.map(s => s.id === id ? { ...s, ...updates } : s)
+                }));
+            };
 
             const filteredSpells = SPELL_DB.filter(s => s.l === newSpellLvl && (s.c.includes(char.class) || char.class === 'Bardo'));
             const filteredFeats = FEATURE_DB.filter(f => {
                 if (featType === 'Razza') return f.type === 'Razziale' && (f.req === char.race || f.req === 'Tutti');
                 if (featType === 'Classe') return f.type === 'Classe' && (f.req === char.class || f.req === 'Tutti');
+                if (featType === 'Origine') return f.type === 'Origine' && (f.req === char.class); 
                 if (featType === 'Talento') return f.type === 'Talento';
                 return f.type === featType; 
             });
@@ -646,13 +723,9 @@
             const getFilteredInventory = () => {
                 let items = char.inventory || [];
                 if (invFilter !== 'Tutti') {
-                    if (invFilter === 'Arsenale') {
-                        items = items.filter(i => ['Arma', 'Armatura'].includes(i.type));
-                    } else if (invFilter === 'Zaino') {
-                        items = items.filter(i => !['Arma', 'Armatura'].includes(i.type));
-                    } else {
-                        items = items.filter(i => i.type === invFilter);
-                    }
+                    if (invFilter === 'Arsenale') items = items.filter(i => ['Arma', 'Armatura'].includes(i.type));
+                    else if (invFilter === 'Zaino') items = items.filter(i => !['Arma', 'Armatura'].includes(i.type));
+                    else items = items.filter(i => i.type === invFilter);
                 }
                 return items.sort((a, b) => {
                     if (invSort === 'Nome') return a.name.localeCompare(b.name);
@@ -663,51 +736,82 @@
             };
             const filteredInventory = getFilteredInventory();
 
+            const handleSlotChange = (level, type, val) => {
+                const safeVal = Math.max(0, parseInt(val) || 0);
+                setChar(prev => ({
+                    ...prev,
+                    spellSlots: {
+                        ...prev.spellSlots,
+                        [level]: { ...(prev.spellSlots[level] || {}), [type]: safeVal }
+                    }
+                }));
+            };
+
+            const handleResourceChange = (res, type, val) => {
+                const safeVal = Math.max(0, parseInt(val) || 0);
+                setChar(prev => ({
+                    ...prev,
+                    resources: {
+                        ...prev.resources,
+                        [res]: { ...(prev.resources[res] || {}), [type]: safeVal }
+                    }
+                }));
+            };
+            
             return (
-                <div className="animate-fade-in w-full max-w-4xl mx-auto pb-24">
-                    <div className="flex items-center justify-between mb-6 sticky top-0 bg-slate-900/95 backdrop-blur z-20 py-4 border-b border-slate-800">
-                        <div className="flex items-center gap-4"><Button variant="ghost" onClick={onCancel}><ChevronLeft size={20} /> Indietro</Button><h2 className="text-2xl font-bold text-slate-100 hidden md:block">{initialData ? 'Modifica' : 'Nuovo'}</h2></div>
-                        <Button onClick={() => onSave(char)} variant="primary"><Save size={18} /> Salva</Button>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                        <div className="md:col-span-3 flex md:flex-col gap-2 bg-slate-800 p-2 rounded-xl overflow-x-auto no-scrollbar">
-                            {[{ id: 'core', label: 'Dati', icon: User }, { id: 'stats', label: 'Stats', icon: Shield }, { id: 'inventory', label: 'Zaino', icon: Backpack }, { id: 'magic', label: 'Magia', icon: Sparkles }, { id: 'abilities', label: 'Talenti', icon: Star }, { id: 'story', label: 'Bio', icon: Scroll }].map(tab => (
-                                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all md:w-full text-left whitespace-nowrap ${activeTab === tab.id ? 'bg-amber-600/20 text-amber-400 border border-amber-600/30' : 'text-slate-400 hover:bg-slate-700'}`}><tab.icon size={18} /> {tab.label}</button>
-                            ))}
+                <div className="animate-fade-in w-full max-w-4xl mx-auto">
+                     {/* FLOATING HEADER */}
+                     <div className="sticky top-4 z-50 px-4">
+                        <div className="bg-slate-900/95 backdrop-blur rounded-2xl shadow-xl border border-slate-700 p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <Button variant="ghost" onClick={onCancel} className="text-slate-400 hover:text-white">
+                                    <ChevronLeft size={20} /> Indietro
+                                </Button>
+                                <h2 className="text-2xl font-bold text-slate-100 hidden md:block">
+                                    {initialData ? 'Modifica' : 'Nuovo'}
+                                </h2>
+                            </div>
+                            <Button onClick={() => onSave(char)} variant="primary" className="px-8 shadow-lg shadow-amber-600/20">
+                                <Save size={18} /> Salva
+                            </Button>
                         </div>
-                        <div className="md:col-span-9 bg-slate-800 p-6 rounded-xl border border-slate-700 min-h-[500px]">
-                            {/* NEW: IMAGE LEFT/TOP PLACEMENT FOR ALL TABS */}
-                            <div className="mb-6 flex flex-col md:flex-row gap-6 items-center md:items-start bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                                <div className="w-32 h-32 bg-slate-800 rounded-full border-2 border-slate-600 overflow-hidden relative group shrink-0">
-                                    {char.imageUrl ? (
-                                        <img src={char.imageUrl} alt="Avatar" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-slate-600">
-                                            <ImageIcon size={40} />
-                                        </div>
-                                    )}
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity" onClick={() => fileInputRef.current.click()}>
-                                        <Upload size={24} className="text-white"/>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 mt-2">
+                        <div className="md:col-span-3 flex flex-col gap-6">
+                             {/* IMAGE LEFT/TOP PLACEMENT (SIDEBAR) */}
+                            <div className="w-full bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden relative group aspect-square shadow-xl">
+                                {char.imageUrl ? (
+                                    <img src={char.imageUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-600 gap-2">
+                                        <ImageIcon size={48} />
+                                        <span className="text-xs font-bold uppercase tracking-wider">No Avatar</span>
                                     </div>
-                                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-                                </div>
-                                <div className="text-center md:text-left flex-1">
-                                    <h2 className="text-3xl font-bold text-white mb-1">{char.name || "Nuovo Eroe"}</h2>
-                                    <div className="flex flex-wrap gap-2 justify-center md:justify-start text-sm font-medium text-amber-500">
-                                        <span className="bg-slate-800 px-2 py-1 rounded border border-slate-700">{char.race}</span>
-                                        <span className="bg-slate-800 px-2 py-1 rounded border border-slate-700">{char.class}</span>
-                                        <span className="bg-slate-800 px-2 py-1 rounded border border-slate-700">Lv. {char.level}</span>
+                                )}
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity backdrop-blur-sm" onClick={() => fileInputRef.current.click()}>
+                                    <div className="bg-slate-800 rounded-full p-3 text-white shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
+                                        <Upload size={24} />
                                     </div>
                                 </div>
+                                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
                             </div>
 
+                            <div className="flex md:flex-col gap-2 bg-slate-800 p-2 rounded-xl overflow-x-auto no-scrollbar border border-slate-700/50">
+                                {[{ id: 'core', label: 'Dati', icon: User }, { id: 'stats', label: 'Stats', icon: Shield }, { id: 'inventory', label: 'Zaino', icon: Backpack }, { id: 'magic', label: 'Magia', icon: Sparkles }, { id: 'abilities', label: 'Talenti', icon: Star }, { id: 'story', label: 'Bio', icon: Scroll }].map(tab => (
+                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all md:w-full text-left whitespace-nowrap ${activeTab === tab.id ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-sm' : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'}`}><tab.icon size={18} /> {tab.label}</button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="md:col-span-9 bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl min-h-[600px]">
+                            
                             {activeTab === 'core' && (
-                                <div className="space-y-4">
-                                    <div className="grid md:grid-cols-2 gap-4">
+                                <div className="space-y-6 animate-fade-in">
+                                    <div className="grid md:grid-cols-2 gap-6">
                                         <Input label="NOME" value={char.name} onChange={e=>setChar({...char, name: e.target.value})} />
-                                        <div className="mb-4"><label className="block text-xs font-bold text-slate-400 mb-1">CLASSE</label><select value={char.class} onChange={e=>setChar({...char, class: e.target.value})} className="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white">{CLASSES.map(c=><option key={c.name} value={c.name}>{c.name}</option>)}</select></div>
-                                        <div className="mb-4"><label className="block text-xs font-bold text-slate-400 mb-1">RAZZA</label><select value={char.race} onChange={e=>setChar({...char, race: e.target.value})} className="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white">{RACES.map(r=><option key={r} value={r}>{r}</option>)}</select></div>
-                                        <div className="mb-4"><label className="block text-xs font-bold text-slate-400 mb-1">ALLINEAMENTO</label><select value={char.alignment} onChange={e=>setChar({...char, alignment: e.target.value})} className="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white">{ALIGNMENTS.map(a=><option key={a} value={a}>{a}</option>)}</select></div>
+                                        <div className="mb-4"><label className="block text-xs font-bold text-slate-400 mb-1">CLASSE</label><select value={char.class} onChange={e=>setChar({...char, class: e.target.value})} className="w-full bg-slate-950 border border-slate-700 rounded-md p-3 text-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all">{CLASSES.map(c=><option key={c.name} value={c.name}>{c.name}</option>)}</select></div>
+                                        <div className="mb-4"><label className="block text-xs font-bold text-slate-400 mb-1">RAZZA</label><select value={char.race} onChange={e=>setChar({...char, race: e.target.value})} className="w-full bg-slate-950 border border-slate-700 rounded-md p-3 text-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all">{RACES.map(r=><option key={r} value={r}>{r}</option>)}</select></div>
+                                        <div className="mb-4"><label className="block text-xs font-bold text-slate-400 mb-1">ALLINEAMENTO</label><select value={char.alignment} onChange={e=>setChar({...char, alignment: e.target.value})} className="w-full bg-slate-950 border border-slate-700 rounded-md p-3 text-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all">{ALIGNMENTS.map(a=><option key={a} value={a}>{a}</option>)}</select></div>
                                         <Input label="LIVELLO" type="number" value={char.level} onChange={e=>setChar({...char, level: parseInt(e.target.value)})} />
                                         <Input label="ESPERIENZA (XP)" value={char.xp} onChange={e=>setChar({...char, xp: e.target.value})} />
                                     </div>
@@ -715,22 +819,28 @@
                             )}
 
                             {activeTab === 'stats' && (
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                                <div className="space-y-8 animate-fade-in">
+                                    <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                                         {Object.keys(char.stats).map(s => (
-                                            <div key={s} className="bg-slate-900 p-2 rounded text-center border border-slate-700">
-                                                <div className="text-[10px] text-slate-500 uppercase font-bold">{s.substring(0,3)}</div>
-                                                <input type="number" value={char.stats[s]} onChange={e => setChar({...char, stats: {...char.stats, [s]: parseInt(e.target.value)||10}})} className="w-full bg-transparent text-center text-lg font-bold text-white outline-none no-spinner" />
-                                                <div className="text-xs text-amber-500 font-bold">{getModifier(char.stats[s])}</div>
+                                            <div key={s} className="bg-slate-900 p-3 rounded-lg text-center border border-slate-700 hover:border-slate-600 transition-colors">
+                                                <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">{s.substring(0,3)}</div>
+                                                <input type="number" value={char.stats[s]} onChange={e => setChar({...char, stats: {...char.stats, [s]: parseInt(e.target.value)||10}})} className="w-full bg-transparent text-center text-2xl font-bold text-white outline-none no-spinner" />
+                                                <div className="text-sm text-amber-500 font-bold bg-slate-800 rounded mt-1 py-0.5">{getModifier(char.stats[s])}</div>
                                             </div>
                                         ))}
                                     </div>
-                                    <hr className="border-slate-700" />
-                                    <div className="grid md:grid-cols-2 gap-4">
+                                    <div className="h-px bg-slate-700/50 w-full" />
+                                    <div className="grid md:grid-cols-2 gap-6">
                                         <DynamicCounter label="Punti Ferita" icon={Heart} color="text-red-500" current={char.hpCurrent} max={char.hpMax} onChangeCurrent={v => setChar({...char, hpCurrent: v})} onChangeMax={v => setChar({...char, hpMax: v})} />
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-slate-900 p-3 rounded border border-slate-700"><label className="text-xs text-slate-500 uppercase font-bold">CA</label><input type="number" value={char.ac} onChange={e=>setChar({...char, ac: parseInt(e.target.value)})} className="w-full bg-transparent text-2xl font-bold text-white outline-none no-spinner" /></div>
-                                            <div className="bg-slate-900 p-3 rounded border border-slate-700"><label className="text-xs text-slate-500 uppercase font-bold">Iniz</label><div className="text-2xl font-bold text-slate-300">{getModifier(char.stats.Destrezza)}</div></div>
+                                            <div className="bg-slate-900 p-5 rounded-xl border border-slate-700 flex flex-col items-center justify-center gap-2">
+                                                <label className="text-xs text-slate-500 uppercase font-bold tracking-wider">Classe Armatura</label>
+                                                <input type="number" value={char.ac} onChange={e=>setChar({...char, ac: parseInt(e.target.value)})} className="w-full bg-transparent text-4xl font-black text-slate-200 outline-none text-center no-spinner" />
+                                            </div>
+                                            <div className="bg-slate-900 p-5 rounded-xl border border-slate-700 flex flex-col items-center justify-center gap-2">
+                                                <label className="text-xs text-slate-500 uppercase font-bold tracking-wider">Iniziativa</label>
+                                                <div className="text-4xl font-black text-slate-300">{getModifier(char.stats.Destrezza)}</div>
+                                            </div>
                                         </div>
                                     </div>
                                     <Input textarea label="Resistenze & Immunità" value={char.resistances} onChange={e=>setChar({...char, resistances: e.target.value})} className="bg-slate-900/50" />
@@ -740,29 +850,38 @@
                             {activeTab === 'inventory' && (
                                 <div className="space-y-8 animate-fade-in">
                                     {/* Monete */}
-                                    <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
-                                        <h3 className="text-sm font-bold text-amber-500 mb-3 uppercase tracking-wider">Borsello</h3>
-                                        <div className="grid grid-cols-3 gap-4">
-                                            <div><label className="text-xs text-yellow-500 font-bold block">Oro</label><input type="number" value={(char.money && char.money.gp) || 0} onChange={e => setChar({...char, money: {...char.money, gp: parseInt(e.target.value)}})} className="w-full bg-slate-800 rounded p-2 text-yellow-400 font-bold border border-slate-700 outline-none no-spinner" /></div>
-                                            <div><label className="text-xs text-slate-300 font-bold block">Argento</label><input type="number" value={(char.money && char.money.sp) || 0} onChange={e => setChar({...char, money: {...char.money, sp: parseInt(e.target.value)}})} className="w-full bg-slate-800 rounded p-2 text-slate-300 font-bold border border-slate-700 outline-none no-spinner" /></div>
-                                            <div><label className="text-xs text-orange-700 font-bold block">Rame</label><input type="number" value={(char.money && char.money.cp) || 0} onChange={e => setChar({...char, money: {...char.money, cp: parseInt(e.target.value)}})} className="w-full bg-slate-800 rounded p-2 text-orange-600 font-bold border border-slate-700 outline-none no-spinner" /></div>
+                                    <div className="bg-slate-900 p-5 rounded-xl border border-slate-700">
+                                        <h3 className="text-xs font-bold text-amber-500 mb-4 uppercase tracking-widest flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500"></div> Borsello</h3>
+                                        <div className="grid grid-cols-3 gap-6">
+                                            <div className="bg-slate-800 rounded-lg p-3 border border-yellow-900/30">
+                                                <label className="text-[10px] text-yellow-500/70 font-bold block mb-1 uppercase">Oro</label>
+                                                <input type="number" value={(char.money && char.money.gp) || 0} onChange={e => setChar({...char, money: {...char.money, gp: parseInt(e.target.value)}})} className="w-full bg-transparent text-xl text-yellow-400 font-bold outline-none no-spinner" />
+                                            </div>
+                                            <div className="bg-slate-800 rounded-lg p-3 border border-slate-600/30">
+                                                <label className="text-[10px] text-slate-400/70 font-bold block mb-1 uppercase">Argento</label>
+                                                <input type="number" value={(char.money && char.money.sp) || 0} onChange={e => setChar({...char, money: {...char.money, sp: parseInt(e.target.value)}})} className="w-full bg-transparent text-xl text-slate-300 font-bold outline-none no-spinner" />
+                                            </div>
+                                            <div className="bg-slate-800 rounded-lg p-3 border border-orange-900/30">
+                                                <label className="text-[10px] text-orange-500/70 font-bold block mb-1 uppercase">Rame</label>
+                                                <input type="number" value={(char.money && char.money.cp) || 0} onChange={e => setChar({...char, money: {...char.money, cp: parseInt(e.target.value)}})} className="w-full bg-transparent text-xl text-orange-500 font-bold outline-none no-spinner" />
+                                            </div>
                                         </div>
                                     </div>
 
                                     {/* Controlli Filtro & Ordinamento */}
-                                    <div className="flex flex-wrap gap-2 items-center justify-between pb-2 border-b border-slate-800">
-                                        <div className="flex gap-2 items-center">
-                                            <Filter size={16} className="text-slate-500"/>
-                                            <select value={invFilter} onChange={e => setInvFilter(e.target.value)} className="bg-slate-900 border border-slate-700 rounded text-xs p-1 text-slate-300 outline-none">
+                                    <div className="flex flex-wrap gap-4 items-center justify-between pb-4 border-b border-slate-700/50">
+                                        <div className="flex gap-3 items-center bg-slate-900 px-3 py-2 rounded-lg border border-slate-700">
+                                            <Filter size={14} className="text-slate-500"/>
+                                            <select value={invFilter} onChange={e => setInvFilter(e.target.value)} className="bg-transparent text-xs font-bold text-slate-300 outline-none uppercase tracking-wide cursor-pointer">
                                                 <option value="Tutti">Tutti</option>
                                                 <option value="Arsenale">Arsenale</option>
                                                 <option value="Zaino">Zaino</option>
                                                 {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                             </select>
                                         </div>
-                                        <div className="flex gap-2 items-center">
-                                            <ArrowDownAZ size={16} className="text-slate-500"/>
-                                            <select value={invSort} onChange={e => setInvSort(e.target.value)} className="bg-slate-900 border border-slate-700 rounded text-xs p-1 text-slate-300 outline-none">
+                                        <div className="flex gap-3 items-center bg-slate-900 px-3 py-2 rounded-lg border border-slate-700">
+                                            <ArrowDownAZ size={14} className="text-slate-500"/>
+                                            <select value={invSort} onChange={e => setInvSort(e.target.value)} className="bg-transparent text-xs font-bold text-slate-300 outline-none uppercase tracking-wide cursor-pointer">
                                                 <option value="Nome">Nome</option>
                                                 <option value="Tipo">Tipo</option>
                                                 <option value="Quantità">Quantità</option>
@@ -771,105 +890,143 @@
                                     </div>
 
                                     {/* Aggiungi Oggetto */}
-                                    <div className="flex gap-2 items-end bg-slate-900 p-3 rounded border border-slate-700">
-                                        <div className="flex-1">
-                                            <label className="text-[10px] text-slate-500 font-bold uppercase">Nome</label>
-                                            <input type="text" value={newItem.name} onChange={e=>setNewItem({...newItem, name: e.target.value})} className="w-full bg-slate-800 text-white text-sm p-2 rounded border border-slate-600 outline-none" />
+                                    <div className="flex flex-col md:flex-row gap-3 items-end bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                                        <div className="flex-1 w-full">
+                                            <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Nome Oggetto</label>
+                                            <input type="text" value={newItem.name} onChange={e=>setNewItem({...newItem, name: e.target.value})} className="w-full bg-slate-800 text-white text-sm p-2.5 rounded-lg border border-slate-600 outline-none focus:border-amber-500 transition-colors" />
                                         </div>
-                                        <div className="w-32">
-                                            <label className="text-[10px] text-slate-500 font-bold uppercase">Tipo</label>
-                                            <select value={newItem.type} onChange={e=>setNewItem({...newItem, type: e.target.value})} className="w-full bg-slate-800 text-white text-sm p-2 rounded border border-slate-600 outline-none">
+                                        <div className="w-full md:w-40">
+                                            <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Tipo</label>
+                                            <select value={newItem.type} onChange={e=>setNewItem({...newItem, type: e.target.value})} className="w-full bg-slate-800 text-white text-sm p-2.5 rounded-lg border border-slate-600 outline-none focus:border-amber-500 transition-colors">
                                                 {ITEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                             </select>
                                         </div>
-                                        <div className="w-16">
-                                            <label className="text-[10px] text-slate-500 font-bold uppercase">Q.tà</label>
-                                            <input type="number" value={newItem.qty} onChange={e=>setNewItem({...newItem, qty: parseInt(e.target.value)})} className="w-full bg-slate-800 text-white text-sm p-2 rounded border border-slate-600 outline-none no-spinner" />
+                                        <div className="w-full md:w-20">
+                                            <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Q.tà</label>
+                                            <input type="number" value={newItem.qty} onChange={e=>setNewItem({...newItem, qty: parseInt(e.target.value)})} className="w-full bg-slate-800 text-white text-sm p-2.5 rounded-lg border border-slate-600 outline-none focus:border-amber-500 transition-colors no-spinner" />
                                         </div>
-                                        <Button onClick={addItem} variant="primary"><Plus size={16}/></Button>
+                                        <Button onClick={addItem} variant="primary" className="h-[42px] w-full md:w-auto"><Plus size={18}/></Button>
+                                    </div>
+                                    
+                                    {/* Additional Note Field in Creation (NEW) */}
+                                    <div className="w-full">
+                                        <textarea value={newItem.notes || ''} onChange={e => setNewItem({...newItem, notes: e.target.value})} placeholder="Note opzionali per il nuovo oggetto..." className="w-full bg-slate-900/30 text-white text-sm p-2.5 rounded-lg border border-slate-700/50 outline-none focus:border-amber-500/50 min-h-[60px] transition-colors" />
                                     </div>
 
-                                    <div className="grid gap-2">
-                                        {filteredInventory.map(item => <InventoryItem key={item.id} item={item} onDelete={id => setChar(p=>({...p, inventory: p.inventory.filter(x=>x.id!==id)}))} onUpdate={updateItem} />)}
-                                        {filteredInventory.length === 0 && <div className="text-center text-slate-600 italic py-4">Nessun oggetto trovato.</div>}
+                                    <div className="grid gap-3">
+                                        {filteredInventory.map(item => <InventoryItem key={item.id} item={item} onDelete={removeItem} onUpdate={updateItem} />)}
+                                        {filteredInventory.length === 0 && <div className="text-center text-slate-600 italic py-8 border-2 border-dashed border-slate-800 rounded-xl">Nessun oggetto trovato.</div>}
                                     </div>
                                 </div>
                             )}
 
                             {activeTab === 'magic' && (
-                                <div className="space-y-6">
-                                    <div className="grid md:grid-cols-2 gap-4">
+                                <div className="space-y-8 animate-fade-in">
+                                    <div className="grid md:grid-cols-2 gap-6">
                                         <DynamicCounter label="Punti Stregoneria" icon={Flame} color="text-rose-400" current={char.resources.sorcery.current} max={char.resources.sorcery.max} onChangeCurrent={v=>setChar({...char, resources: {...char.resources, sorcery: {current: v, max: char.resources.sorcery.max}}})} onChangeMax={v=>setChar({...char, resources: {...char.resources, sorcery: {current: char.resources.sorcery.current, max: v}}})} />
                                         <DynamicCounter label="Punti Magia" icon={Zap} color="text-blue-400" current={char.resources.magic.current} max={char.resources.magic.max} onChangeCurrent={v=>setChar({...char, resources: {...char.resources, magic: {current: v, max: char.resources.magic.max}}})} onChangeMax={v=>setChar({...char, resources: {...char.resources, magic: {current: char.resources.magic.current, max: v}}})} />
                                     </div>
-                                    <div className="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                                        <h3 className="text-xs font-bold text-purple-400 uppercase mb-3 flex items-center gap-2"><Sparkles size={14}/> Slot Incantesimo</h3>
-                                        <div className="grid grid-cols-3 md:grid-cols-9 gap-2">
+                                    
+                                    <div className="bg-slate-900 p-6 rounded-xl border border-slate-700">
+                                        <h3 className="text-xs font-bold text-purple-400 uppercase mb-4 flex items-center gap-2"><Sparkles size={14}/> Slot Incantesimo</h3>
+                                        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-3">
                                             {[1,2,3,4,5,6,7,8,9].map(lvl => (
-                                                <div key={lvl} className="flex flex-col items-center bg-slate-800 p-2 rounded border border-slate-700 relative">
-                                                    <span className="text-[10px] text-slate-500 font-bold absolute top-1 left-1">{lvl}</span>
-                                                    <div className="mt-2 text-center">
-                                                        <div className="text-xl font-bold text-purple-200">{char.spellSlots[lvl]?.current||0}</div>
-                                                        <div className="w-full h-px bg-slate-600 my-1"></div>
-                                                        <input type="number" className="bg-transparent text-center w-full text-xs text-slate-500 font-bold outline-none no-spinner" value={char.spellSlots[lvl]?.max||0} onChange={e => setChar(p => ({...p, spellSlots: {...p.spellSlots, [lvl]: {current: p.spellSlots[lvl]?.current||0, max: parseInt(e.target.value)||0}}}))} />
-                                                    </div>
-                                                    <div className="flex justify-between w-full mt-1"><button onClick={() => setChar(p => ({...p, spellSlots: {...p.spellSlots, [lvl]: {...p.spellSlots[lvl], current: Math.max(0, (p.spellSlots[lvl]?.current||0)-1)}} }))} className="text-slate-500 hover:text-white px-1">-</button><button onClick={() => setChar(p => ({...p, spellSlots: {...p.spellSlots, [lvl]: {...p.spellSlots[lvl], current: (p.spellSlots[lvl]?.current||0)+1}} }))} className="text-slate-500 hover:text-white px-1">+</button></div>
-                                                </div>
+                                                <SpellSlotCounter 
+                                                    key={lvl} 
+                                                    level={lvl} 
+                                                    current={char.spellSlots[lvl]?.current||0} 
+                                                    max={char.spellSlots[lvl]?.max||0} 
+                                                    onChange={(key, val) => setChar(p => ({...p, spellSlots: {...p.spellSlots, [lvl]: {...(p.spellSlots[lvl]||{}), [key]: val}}}))}
+                                                />
                                             ))}
                                         </div>
                                     </div>
-                                    <div className="bg-slate-900 p-3 rounded border border-slate-700">
-                                        <div className="flex gap-2 mb-2">
-                                            <select value={newSpellLvl} onChange={e=>setNewSpellLvl(parseInt(e.target.value))} className="bg-slate-800 text-white text-sm rounded p-2 border border-slate-600"><option value={0}>Cantrip</option>{[1,2,3,4,5,6,7,8,9].map(l=><option key={l} value={l}>Lv {l}</option>)}</select>
-                                            <select value={selSpell} onChange={e=>{setSelSpell(e.target.value); setSpellName(e.target.value)}} className="bg-slate-800 text-white text-sm rounded p-2 border border-slate-600 flex-1"><option value="">-- Seleziona ({char.class || 'Tutti'}) --</option>{filteredSpells.map(s=><option key={s.n} value={s.n}>{s.n}</option>)}</select>
+                                    
+                                    <div className="bg-slate-900 p-4 rounded-xl border border-slate-700 flex flex-col gap-3">
+                                        <div className="flex gap-3">
+                                            <select value={newSpellLvl} onChange={e=>setNewSpellLvl(parseInt(e.target.value))} className="w-28 bg-slate-800 text-white text-sm rounded-lg p-2.5 border border-slate-600 outline-none"><option value={0}>Cantrip</option>{[1,2,3,4,5,6,7,8,9].map(l=><option key={l} value={l}>Lv {l}</option>)}</select>
+                                            <select value={selSpell} onChange={e=>{setSelSpell(e.target.value); setSpellName(e.target.value)}} className="flex-1 bg-slate-800 text-white text-sm rounded-lg p-2.5 border border-slate-600 outline-none"><option value="">-- Seleziona ({char.class || 'Tutti'}) --</option>{filteredSpells.map(s=><option key={s.n} value={s.n}>{s.n}</option>)}</select>
                                         </div>
-                                        <div className="flex gap-2"><input type="text" value={spellName} onChange={e=>setSpellName(e.target.value)} placeholder="Nome incantesimo..." className="flex-1 bg-slate-800 text-white text-sm rounded p-2 border border-slate-600" /><Button onClick={addSpell} variant="primary"><Plus size={16}/></Button></div>
-                                    </div>
-                                    {[0,1,2,3,4,5,6,7,8,9].map(lvl => {
-                                        const list = char.spells.filter(s=>s.level===lvl);
-                                        if(!list.length) return null;
-                                        return <div key={lvl}><h4 className="text-xs font-bold text-slate-500 uppercase mb-2 border-b border-slate-800 pb-1">{lvl === 0 ? "Trucchetti" : `Livello ${lvl}`}</h4><div className="grid gap-2">{list.map(s => <SpellItem key={s.id} spell={s} onDelete={id => setChar(p=>({...p, spells: p.spells.filter(x=>x.id!==id)}))} onUpdate={(id, d) => setChar(p=>({...p, spells: p.spells.map(x=>x.id===id?{...x, ...d}:x)}))} />)}</div></div>
-                                    })}
-                                </div>
-                            )}
-                            {activeTab === 'abilities' && (
-                                <div className="space-y-6">
-                                    <div className="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                                        <h3 className="text-sm font-bold text-yellow-500 mb-3 uppercase flex items-center gap-2"><Star size={16}/> Nuova Abilità</h3>
-                                        <div className="grid gap-3">
-                                            <div className="flex gap-2">
-                                                <select value={featType} onChange={e=>{setFeatType(e.target.value); setSelFeat('')}} className="bg-slate-800 text-white text-sm rounded p-2 border border-slate-600 w-1/3"><option value="Classe">Privilegio Classe</option><option value="Razza">Tratto Razziale</option><option value="Talento">Talento</option><option value="Altro">Altro</option></select>
-                                                <select value={selFeat} onChange={e=>{ setSelFeat(e.target.value); const f = filteredFeats.find(x=>x.n===e.target.value); if(f) { setFeatName(f.n); setFeatDesc(f.d); } }} className="bg-slate-800 text-white text-sm rounded p-2 border border-slate-600 flex-1"><option value="">-- Seleziona dalla lista --</option>{filteredFeats.map(f=><option key={f.n} value={f.n}>{f.n}</option>)}</select>
-                                            </div>
-                                            <input type="text" value={featName} onChange={e=>setFeatName(e.target.value)} placeholder="Nome abilità..." className="bg-slate-800 text-white text-sm rounded p-2 border border-slate-600 w-full" />
-                                            <textarea value={featDesc} onChange={e=>setFeatDesc(e.target.value)} placeholder="Descrizione effetto..." className="bg-slate-800 text-white text-sm rounded p-2 border border-slate-600 w-full h-20" />
-                                            <div className="flex justify-end"><Button onClick={addFeat} variant="primary">Aggiungi</Button></div>
+                                        <div className="flex gap-3">
+                                            <input type="text" value={spellName} onChange={e=>setSpellName(e.target.value)} placeholder="Nome incantesimo personalizzato..." className="flex-1 bg-slate-800 text-white text-sm rounded-lg p-2.5 border border-slate-600 outline-none" />
+                                            <Button onClick={addSpell} variant="primary" className="h-[42px]"><Plus size={18}/></Button>
                                         </div>
                                     </div>
-                                    <div className="space-y-4">
-                                        {['Classe', 'Razza', 'Talento', 'Altro'].map(cat => {
-                                            const list = char.abilities?.filter(a=>a.source===cat) || [];
+                                    
+                                    <div className="space-y-6">
+                                        {[0,1,2,3,4,5,6,7,8,9].map(lvl => {
+                                            const list = char.spells.filter(s=>s.level===lvl);
                                             if(!list.length) return null;
-                                            return <div key={cat}><h4 className="text-xs font-bold text-slate-500 uppercase mb-2 border-b border-slate-800 pb-1">{cat}</h4><div className="grid gap-2">{list.map(f => <div key={f.id} className="bg-slate-800 p-3 rounded border border-slate-700 relative group hover:border-amber-500/30 transition-colors"><h5 className="font-bold text-amber-500 text-sm">{f.name}</h5><p className="text-xs text-slate-300 mt-1 whitespace-pre-wrap leading-relaxed">{f.desc}</p><button onClick={() => setChar(p=>({...p, abilities: p.abilities.filter(x=>x.id!==f.id)}))} className="absolute top-2 right-2 text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={14}/></button></div>)}</div></div>
+                                            return (
+                                                <div key={lvl}>
+                                                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-3 border-b border-slate-800 pb-2 flex justify-between items-end">
+                                                        <span>{lvl === 0 ? "Trucchetti" : `Livello ${lvl}`}</span>
+                                                        <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded">{list.length} spells</span>
+                                                    </h4>
+                                                    <div className="grid gap-3 grid-cols-1">{list.map(s => <SpellItem key={s.id} spell={s} onDelete={removeSpell} onUpdate={updateSpell} />)}</div>
+                                                </div>
+                                            )
                                         })}
                                     </div>
                                 </div>
                             )}
-                            {activeTab === 'story' && (
-                                <div className="space-y-6">
+
+                            {activeTab === 'abilities' && (
+                                <div className="space-y-8 animate-fade-in">
+                                    <div className="bg-slate-900 p-5 rounded-xl border border-slate-700">
+                                        <h3 className="text-sm font-bold text-yellow-500 mb-4 uppercase flex items-center gap-2"><Star size={16}/> Nuova Abilità</h3>
+                                        <div className="space-y-4">
+                                            <div className="flex flex-col md:flex-row gap-3">
+                                                <select value={featType} onChange={e=>{setFeatType(e.target.value); setSelFeat('')}} className="bg-slate-800 text-white text-sm rounded-lg p-2.5 border border-slate-600 w-full md:w-1/3 outline-none">
+                                                    <option value="Classe">Privilegio Classe</option>
+                                                    <option value="Origine">Origine (Sottoclasse)</option>
+                                                    <option value="Razza">Tratto Razziale</option>
+                                                    <option value="Talento">Talento</option>
+                                                    <option value="Altro">Altro</option>
+                                                </select>
+                                                <select value={selFeat} onChange={e=>{ setSelFeat(e.target.value); const f = filteredFeats.find(x=>x.n===e.target.value); if(f) { setFeatName(f.n); setFeatDesc(f.d); } }} className="bg-slate-800 text-white text-sm rounded-lg p-2.5 border border-slate-600 flex-1 outline-none"><option value="">-- Seleziona dalla lista --</option>{filteredFeats.map(f=><option key={f.n} value={f.n}>{f.n}</option>)}</select>
+                                            </div>
+                                            <input type="text" value={featName} onChange={e=>setFeatName(e.target.value)} placeholder="Nome abilità..." className="bg-slate-800 text-white text-sm rounded-lg p-2.5 border border-slate-600 w-full outline-none" />
+                                            <textarea value={featDesc} onChange={e=>setFeatDesc(e.target.value)} placeholder="Descrizione effetto..." className="bg-slate-800 text-white text-sm rounded-lg p-2.5 border border-slate-600 w-full h-24 outline-none" />
+                                            <div className="flex justify-end"><Button onClick={addFeat} variant="primary">Aggiungi Abilità</Button></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-6">
+                                        {['Origine', 'Classe', 'Razza', 'Talento', 'Altro'].map(cat => {
+                                            const list = char.abilities?.filter(a=>a.source===cat) || [];
+                                            if(!list.length) return null;
+                                            return (
+                                                <div key={cat}>
+                                                    <h4 className="text-xs font-bold text-slate-500 uppercase mb-3 border-b border-slate-800 pb-2">{cat}</h4>
+                                                    <div className="grid gap-3 grid-cols-1">
+                                                        {list.map(f => <FeatItem key={f.id} feat={f} onDelete={deleteFeat} onUpdate={updateFeat} />)}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {/* Story tab remains same */}
+                             {activeTab === 'story' && (
+                                <div className="space-y-6 animate-fade-in">
                                     <Input textarea label="Backstory" value={char.backstory} onChange={e => setChar({...char, backstory: e.target.value})} />
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <Input textarea label="Personalità" value={char.personality} onChange={e => setChar({...char, personality: e.target.value})} />
                                         <Input textarea label="Note" value={char.notes} onChange={e => setChar({...char, notes: e.target.value})} />
                                     </div>
                                 </div>
                             )}
+
                         </div>
                     </div>
                 </div>
             );
         };
-
+        
+        // ... (APP Component remains the same)
         const App = () => {
             const [view, setView] = useState('list');
             const [characters, setCharacters] = useState([]);
@@ -941,10 +1098,10 @@
 
             return (
                 <div className="min-h-screen font-sans selection:bg-amber-500/30">
-                    <nav className="border-b border-slate-800 bg-slate-900 px-4 py-3 sticky top-0 z-50 shadow-lg">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3 shrink-0"><div className="bg-amber-600 p-2 rounded-lg text-slate-900"><Sword size={24} /></div><h1 className="text-xl font-bold tracking-tight text-slate-100 hidden sm:block">GRIMORIO <span className="text-amber-500">D&D</span></h1></div>
-                            <div className="flex gap-2 items-center overflow-x-auto no-scrollbar ml-4 pl-2">
+                    <nav className="mx-auto max-w-7xl mt-4 px-6 sticky top-4 z-50">
+                        <div className="bg-slate-900/95 backdrop-blur rounded-2xl shadow-xl border border-slate-700/50 px-6 py-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3 shrink-0"><div className="bg-amber-600 p-2 rounded-lg text-slate-900 shadow-lg shadow-amber-900/50"><Sword size={24} /></div><h1 className="text-xl font-bold tracking-tight text-slate-100 hidden sm:block">GRIMORIO <span className="text-amber-500">D&D</span></h1></div>
+                            <div className="flex gap-3 items-center overflow-x-auto no-scrollbar pl-2">
                                 {view === 'list' && (
                                     <>
                                         <div className="mr-2 cursor-help shrink-0">{getSyncIcon()}</div>
@@ -954,20 +1111,20 @@
                                         <Button onClick={() => importInputRef.current.click()} variant="secondary" className="shrink-0 px-3"><Upload size={20} /></Button>
                                         <Button onClick={handleExport} variant="secondary" className="shrink-0 px-3"><Download size={20} /></Button>
                                         <div className="w-px bg-slate-700 h-6 mx-1 shrink-0"></div>
-                                        <Button onClick={() => startEdit(null)} className="animate-pulse-slow shrink-0"><Plus size={20} /> <span className="hidden md:inline">Crea</span></Button>
+                                        <Button onClick={() => startEdit(null)} className="animate-pulse-slow shrink-0 shadow-lg shadow-amber-900/20"><Plus size={20} /> <span className="hidden md:inline">Crea</span></Button>
                                     </>
                                 )}
                             </div>
                         </div>
                     </nav>
-                    <main className="container mx-auto p-4 md:p-6">
+                    <main className="container mx-auto p-4 md:p-8 mt-4">
                         {view === 'list' && (
-                            <div className="space-y-6 animate-fade-in">
+                            <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
                                 {characters.length === 0 ? (
                                     <div className="text-center py-20 flex flex-col items-center"><div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-6 text-slate-600"><Ghost size={48} /></div><h2 className="text-2xl font-bold text-slate-300 mb-2">La Taverna è vuota</h2><p className="text-slate-500 max-w-md mb-8">Inizia subito a forgiare il destino del tuo prossimo eroe.</p><div className="flex gap-4"><Button onClick={() => importInputRef.current.click()} variant="secondary"><Upload size={18} /> Importa</Button><Button onClick={() => startEdit(null)} variant="primary" className="text-lg px-8 py-3">Inizia Creazione</Button></div></div>
                                 ) : (
                                     <>
-                                        <div className="flex items-center justify-between"><h2 className="text-slate-400 font-medium uppercase tracking-widest text-sm">I tuoi Personaggi ({characters.length})</h2><div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700"><button onClick={() => setViewMode('gallery')} className={`p-2 rounded ${viewMode === 'gallery' ? 'bg-slate-700 text-amber-500 shadow-sm' : 'text-slate-400 hover:text-white'}`}><LayoutGrid size={18} /></button><button onClick={() => setViewMode('list')} className={`p-2 rounded ${viewMode === 'list' ? 'bg-slate-700 text-amber-500 shadow-sm' : 'text-slate-400 hover:text-white'}`}><LayoutList size={18} /></button></div></div>
+                                        <div className="flex items-center justify-between px-2"><h2 className="text-slate-400 font-bold uppercase tracking-widest text-xs">I tuoi Personaggi ({characters.length})</h2><div className="flex bg-slate-800/50 rounded-lg p-1 border border-slate-700/50"><button onClick={() => setViewMode('gallery')} className={`p-2 rounded ${viewMode === 'gallery' ? 'bg-slate-700 text-amber-500 shadow-sm' : 'text-slate-400 hover:text-white'}`}><LayoutGrid size={18} /></button><button onClick={() => setViewMode('list')} className={`p-2 rounded ${viewMode === 'list' ? 'bg-slate-700 text-amber-500 shadow-sm' : 'text-slate-400 hover:text-white'}`}><LayoutList size={18} /></button></div></div>
                                         <div className={viewMode === 'gallery' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-4"}>{characters.map(char => <CharacterCard key={char.id} character={char} onEdit={startEdit} onDelete={handleDelete} viewMode={viewMode} />)}</div>
                                     </>
                                 )}
