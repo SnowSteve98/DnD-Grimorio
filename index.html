@@ -1081,7 +1081,57 @@
             const handleDelete = (id) => { if (window.confirm("Sei sicuro?")) setCharacters(characters.filter(c => c.id !== id)); };
             const startEdit = (char) => { setEditingId(char ? char.id : null); setView('edit'); };
             const handleExport = () => { const dataStr = JSON.stringify(characters, null, 2); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); const linkElement = document.createElement('a'); linkElement.setAttribute('href', dataUri); linkElement.setAttribute('download', `grimorio-backup-${new Date().toISOString().slice(0,10)}.json`); linkElement.click(); };
-            const handleImport = (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { try { const importedChars = JSON.parse(e.target.result); if (Array.isArray(importedChars)) { if(window.confirm(`Importare ${importedChars.length} personaggi?`)) setCharacters(prev => { const newChars = [...prev]; importedChars.forEach(impChar => { const index = newChars.findIndex(c => c.id === impChar.id); if (index >= 0) newChars[index] = impChar; else newChars.push(impChar); }); return newChars; }); } } catch (err) { alert("Errore file."); } }; reader.readAsText(file); event.target.value = null; };
+            const handleImport = (event) => { 
+                const file = event.target.files[0]; 
+                if (!file) return; 
+                
+                const reader = new FileReader(); 
+                reader.onload = (e) => { 
+                    try { 
+                        const importedChars = JSON.parse(e.target.result); 
+                        if (Array.isArray(importedChars)) { 
+                            if(window.confirm(`Importare ${importedChars.length} personaggi? I dati su Cloud verranno sovrascritti.`)) { 
+                                
+                                // 1. Calcoliamo il nuovo stato unendo i dati attuali con quelli importati
+                                const newChars = [...characters]; 
+                                importedChars.forEach(impChar => { 
+                                    const index = newChars.findIndex(c => c.id === impChar.id); 
+                                    if (index >= 0) newChars[index] = impChar; 
+                                    else newChars.push(impChar); 
+                                }); 
+
+                                // 2. Aggiorniamo la vista locale
+                                setCharacters(newChars); 
+
+                                // 3. FIX CRITICO: Scriviamo IMMEDIATAMENTE su Firebase
+                                // Non aspettiamo il debounce (i 2 secondi), altrimenti Firebase ricarica i vecchi dati.
+                                const syncId = localStorage.getItem('dnd-sync-id');
+                                if (dbRef.current && syncId) {
+                                    setSyncStatus('saving');
+                                    // Disattiviamo momentaneamente il flag per evitare loop strani, anche se non strettamente necessario qui
+                                    isRemoteUpdate.current = false; 
+                                    
+                                    dbRef.current.collection('grimorio_data').doc(syncId).set({ 
+                                        characters: JSON.stringify(newChars), 
+                                        updatedAt: new Date().toISOString() 
+                                    }).then(() => {
+                                        console.log("Importazione salvata su Cloud con successo.");
+                                        setSyncStatus('synced');
+                                    }).catch(err => {
+                                        console.error("Errore sync import:", err);
+                                        setSyncStatus('error');
+                                    });
+                                }
+                            } 
+                        } 
+                    } catch (err) { 
+                        alert("Errore file o JSON non valido."); 
+                        console.error(err);
+                    } 
+                }; 
+                reader.readAsText(file); 
+                event.target.value = null; 
+            };
             const getSyncIcon = () => { switch(syncStatus) { case 'saving': return <Icon path={I.Cloud} className="text-amber-500 animate-pulse" title="Salvataggio..." />; case 'synced': return <Icon path={I.CloudCheck} className="text-green-500" title="Sincronizzato" />; case 'error': return <Icon path={I.CloudOff} className="text-red-500" title="Errore" />; case 'connecting': return <Icon path={I.Cloud} className="text-slate-500 animate-pulse" title="Connessione..." />; default: return <Icon path={I.CloudOff} className="text-slate-600" title="Cloud off" />; } };
 
             return (
