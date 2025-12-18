@@ -1,4 +1,4 @@
-// --- DATA: SPELL SRD DATABASE (LISTA COMPLETA 5E AGGIORNATA) ---
+// --- DATA: SPELL SRD DATABASE (LISTA COMPLETA 5E AGGIORNATA CON LOGICA ORIGINI) ---
 const SPELL_DB = [
     // --- CANTRIPS (Livello 0) ---
     { n: "Amicizia", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Vantaggio su prove di Carisma contro creatura non ostile. Diventa ostile dopo 1 min." },
@@ -6,154 +6,165 @@ const SPELL_DB = [
     { n: "Beffa Crudele", l: 0, c: ["Bardo"], d: "1d4 danni psichici e svantaggio al prossimo attacco del bersaglio." },
     { n: "Colpo Accurato", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Vantaggio al tuo primo tiro per colpire nel prossimo turno." },
     { n: "Controllo Fiamme", l: 0, c: ["Druido", "Mago", "Stregone", "Artefice"], d: "Manipoli fiamme non magiche (colore, luminosità, espansione)." },
-    { n: "Dardo di Fuoco", l: 0, c: ["Mago", "Stregone", "Artefice"], d: "1d10 danni fuoco a distanza. Aumenta ai livelli 5, 11, 17." },
+    { n: "Dardo di Fuoco", l: 0, c: ["Mago", "Stregone", "Artefice", "Dominio della Luce"], d: "1d10 danni fuoco a distanza. Aumenta ai livelli 5, 11, 17." },
     { n: "Deflagrazione Occulta", l: 0, c: ["Warlock"], d: "1d10 danni forza. Raggi multipli ai livelli alti (1, 5, 11, 17)." },
-    { n: "Fiamma Sacra", l: 0, c: ["Chierico"], d: "1d8 danni radiosi su TS Destrezza fallito. Ignora copertura." },
+    { n: "Fiamma Sacra", l: 0, c: ["Chierico", "Patto: Il Celestiale"], d: "1d8 danni radiosi su TS Destrezza fallito. Ignora copertura." },
     { n: "Frusta di Spine", l: 0, c: ["Druido", "Artefice"], d: "1d6 perforanti e attira il bersaglio di 3m verso di te." },
-    { n: "Guida", l: 0, c: ["Chierico", "Druido", "Artefice"], d: "+1d4 a una prova di abilità a scelta." },
-    { n: "Illusione Minore", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Crei suono o immagine di un oggetto immobile (max 1.5m)." },
+    { n: "Guida", l: 0, c: ["Chierico", "Druido", "Artefice", "Patto: Il Talismano"], d: "+1d4 a una prova di abilità a scelta." },
+    { n: "Illusione Minore", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock", "Monaco"], d: "Crei suono o immagine di un oggetto immobile (max 1.5m)." },
     { n: "Interdizione alle Lame", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Resistenza danni contundenti, perforanti, taglienti da armi fino al prossimo turno." },
     { n: "Lama di Fiamma Verde", l: 0, c: ["Mago", "Stregone", "Warlock", "Artefice"], d: "Colpisci in mischia, fuoco al bersaglio e a un nemico vicino." },
     { n: "Lama Rimbombante", l: 0, c: ["Mago", "Stregone", "Warlock", "Artefice"], d: "Booming Blade. Se il bersaglio si muove subisce danni da tuono." },
-    { n: "Luci Danzanti", l: 0, c: ["Bardo", "Mago", "Stregone", "Artefice"], d: "Crea fino a 4 luci fioche mobili." },
-    { n: "Luce", l: 0, c: ["Bardo", "Chierico", "Mago", "Stregone", "Artefice"], d: "Oggetto emana luce intensa 6m e fioca 6m per 1 ora." },
-    { n: "Mano Magica", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock", "Artefice"], d: "Mano spettrale manipola oggetti entro 9m." },
+    { n: "Luci Danzanti", l: 0, c: ["Bardo", "Mago", "Stregone", "Artefice", "Magia Drow"], d: "Crea fino a 4 luci fioche mobili." },
+    { n: "Luce", l: 0, c: ["Bardo", "Chierico", "Mago", "Stregone", "Artefice", "Patto: Il Celestiale", "Portatore di Luce"], d: "Oggetto emana luce intensa 6m e fioca 6m per 1 ora." },
+    { n: "Mano Magica", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock", "Artefice", "Telecinetico"], d: "Mano spettrale manipola oggetti entro 9m." },
     { n: "Messaggio", l: 0, c: ["Bardo", "Mago", "Stregone", "Artefice"], d: "Sussurri un messaggio a creatura entro 36m." },
     { n: "Modellare Acqua", l: 0, c: ["Druido", "Mago", "Stregone"], d: "Congeli, muovi o cambi colore all'acqua." },
     { n: "Prestidigitazione", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock", "Artefice"], d: "Effetti sensoriali minori, accendere fuochi, pulire, riscaldare." },
-    { n: "Produrre Fiamma", l: 0, c: ["Druido"], d: "Fiamma nella mano (luce) o attacco 1d8 fuoco." },
+    { n: "Produrre Fiamma", l: 0, c: ["Druido", "Genasi del Fuoco"], d: "Fiamma nella mano (luce) o attacco 1d8 fuoco." },
     { n: "Raggio di Gelo", l: 0, c: ["Mago", "Stregone", "Artefice"], d: "1d8 freddo e riduce velocità bersaglio di 3m." },
     { n: "Resistenza", l: 0, c: ["Chierico", "Druido", "Artefice"], d: "+1d4 a un Tiro Salvezza." },
     { n: "Riparare", l: 0, c: ["Bardo", "Chierico", "Druido", "Mago", "Artefice"], d: "Ripari una singola rottura in un oggetto." },
     { n: "Rombo del Tuono", l: 0, c: ["Bardo", "Druido", "Mago", "Stregone", "Artefice"], d: "Thunderclap. 1d6 tuono in area 1.5m attorno a te." },
-    { n: "Scheggia Psichica", l: 0, c: ["Mago", "Stregone", "Warlock"], d: "Mind Sliver. 1d6 psichici e -1d4 al prossimo TS del bersaglio." },
+    { n: "Scheggia Psichica", l: 0, c: ["Mago", "Stregone", "Warlock", "Origine: Mente Aberrante"], d: "Mind Sliver. 1d6 psichici e -1d4 al prossimo TS del bersaglio." },
     { n: "Spruzzo Acido", l: 0, c: ["Mago", "Stregone", "Artefice"], d: "1d6 acido a una o due creature entro 1.5m l'una dall'altra. TS Dex." },
     { n: "Spruzzo Velenoso", l: 0, c: ["Druido", "Mago", "Stregone", "Warlock", "Artefice"], d: "1d12 danni veleno su TS Costituzione fallito." },
     { n: "Stabilizzare", l: 0, c: ["Bardo", "Chierico", "Druido", "Artefice"], d: "Stabilizzi una creatura morente (0 PF)." },
     { n: "Stretta Folgorante", l: 0, c: ["Mago", "Stregone", "Artefice"], d: "1d8 fulmine a contatto, bersaglio perde reazioni. Vantaggio se metallo." },
-    { n: "Taumaturgia", l: 0, c: ["Chierico", "Tiefling"], d: "Effetti minori soprannaturali: voce tonante, tremori, fiamme tremolanti." },
+    { n: "Taumaturgia", l: 0, c: ["Chierico", "Eredità Infernale"], d: "Effetti minori soprannaturali: voce tonante, tremori, fiamme tremolanti." },
     { n: "Tocco Gelido", l: 0, c: ["Mago", "Stregone", "Warlock"], d: "1d8 necrotici, bersaglio non può recuperare PF." },
 
     // --- LIVELLO 1 ---
-    { n: "Allarme", l: 1, c: ["Mago", "Ranger", "Artefice", "Stregone"], d: "Protegge un'area. Suono o mentale." }, // Stregone (Anima Meccanica)
-    { n: "Amicizia con gli Animali", l: 1, c: ["Bardo", "Druido", "Ranger"], d: "Bestia con Int<4 viene affascinata." },
+    { n: "Allarme", l: 1, c: ["Mago", "Ranger", "Artefice", "Origine: Anima Meccanica"], d: "Protegge un'area. Suono o mentale." },
+    { n: "Amicizia con gli Animali", l: 1, c: ["Bardo", "Druido", "Ranger", "Dominio della Natura"], d: "Bestia con Int<4 viene affascinata." },
     { n: "Armatura Magica", l: 1, c: ["Mago", "Stregone"], d: "CA diventa 13 + Des per 8 ore." },
     { n: "Assorbire Elementi", l: 1, c: ["Druido", "Ranger", "Mago", "Stregone", "Artefice"], d: "Reazione. Resistenza al danno elementale ricevuto e danni extra al prossimo attacco." },
     { n: "Bacche Benefiche", l: 1, c: ["Druido", "Ranger"], d: "Crea 10 bacche, ognuna cura 1 PF e nutre per un giorno." },
-    { n: "Benedizione", l: 1, c: ["Chierico", "Paladino", "Stregone"], d: "+1d4 a TxC e TS per 3 creature." }, // Stregone (Anima Divina)
-    { n: "Braccia di Hadar", l: 1, c: ["Warlock", "Stregone"], d: "2d6 necrotici a creature entro 3m e niente reazioni." }, // Stregone (Mente Aberrante)
+    { n: "Benedizione", l: 1, c: ["Chierico", "Paladino", "Origine: Anima Divina", "Stile: Benedetto"], d: "+1d4 a TxC e TS per 3 creature." },
+    { n: "Braccia di Hadar", l: 1, c: ["Warlock", "Origine: Mente Aberrante"], d: "2d6 necrotici a creature entro 3m e niente reazioni." },
     { n: "Caduta Morbida", l: 1, c: ["Bardo", "Mago", "Stregone", "Artefice"], d: "Reazione. Fino a 5 creature cadono lentamente senza subire danni." },
-    { n: "Camuffare Se Stesso", l: 1, c: ["Bardo", "Mago", "Stregone", "Artefice", "Ranger"], d: "Illusione che cambia il tuo aspetto (inclusi vestiti) per 1 ora." }, // Ranger (Gloomstalker)
+    { n: "Camuffare Se Stesso", l: 1, c: ["Bardo", "Mago", "Stregone", "Artefice", "Conclave: Cacciatore delle Tenebre", "Dominio dell'Inganno"], d: "Illusione che cambia il tuo aspetto (inclusi vestiti) per 1 ora." },
     { n: "Catapulta", l: 1, c: ["Mago", "Stregone", "Artefice"], d: "Lanci un oggetto. 3d8 danni contundenti." },
     { n: "Coltello di Ghiaccio", l: 1, c: ["Druido", "Mago", "Stregone"], d: "Ice Knife. 1d10 perforanti al bersaglio + 2d6 freddo ad area." },
-    { n: "Comando", l: 1, c: ["Chierico", "Paladino"], d: "Obbliga creatura a eseguire un comando (es. 'Fuggi', 'Cadi')." },
+    { n: "Comando", l: 1, c: ["Chierico", "Paladino", "Patto: L'Immondo", "Dominio dell'Ordine"], d: "Obbliga creatura a eseguire un comando (es. 'Fuggi', 'Cadi')." },
     { n: "Comprensione dei Linguaggi", l: 1, c: ["Bardo", "Mago", "Stregone", "Warlock", "Druido", "Ranger", "Artefice"], d: "Capisci il significato letterale di ogni lingua parlata o scritta." },
-    { n: "Cura Ferite", l: 1, c: ["Bardo", "Chierico", "Druido", "Paladino", "Ranger", "Artefice", "Stregone", "Warlock"], d: "Tocco. Cura 1d8 + mod incantatore." }, // Stregone (Divina), Warlock (Celestiale)
-    { n: "Dardo Incantato", l: 1, c: ["Mago", "Stregone"], d: "3 dardi infallibili, 1d4+1 forza ciascuno." },
-    { n: "Dardo Tracciante", l: 1, c: ["Chierico"], d: "4d6 danni radiosi e vantaggio prossimo TxC contro il bersaglio." },
+    { n: "Cura Ferite", l: 1, c: ["Bardo", "Chierico", "Druido", "Paladino", "Ranger", "Artefice", "Origine: Anima Divina", "Patto: Il Celestiale"], d: "Tocco. Cura 1d8 + mod incantatore." },
+    { n: "Dardo del Caos", l: 1, c: ["Stregone"], d: "Chaos Bolt. 2d8+1d6 danni di tipo casuale. Rimbalza su critico." },
+    { n: "Dardo Incantato", l: 1, c: ["Mago", "Stregone", "Dominio Arcano"], d: "3 dardi infallibili, 1d4+1 forza ciascuno." },
+    { n: "Dardo Tracciante", l: 1, c: ["Chierico", "Patto: Il Celestiale"], d: "4d6 danni radiosi e vantaggio prossimo TxC contro il bersaglio." },
     { n: "Dardo Stregato", l: 1, c: ["Warlock"], d: "1d12 danni fulmine, o danni continuati se concentrazione." },
     { n: "Duello Compulsivo", l: 1, c: ["Paladino"], d: "Costringe nemico ad attaccare te. Svantaggio vs altri." },
-    { n: "Eroismo", l: 1, c: ["Bardo", "Paladino"], d: "Immunità paura e PF temporanei ogni turno." },
-    { n: "Fuoco Fatato", l: 1, c: ["Bardo", "Druido", "Artefice", "Chierico"], d: "Vantaggio ai TxC contro creature nell'area, niente invisibilità." }, // Chierico (Luce/Crepuscolo)
-    { n: "Identificare", l: 1, c: ["Bardo", "Mago", "Artefice"], d: "Rivela proprietà magiche di un oggetto." },
-    { n: "Immagine Silenziosa", l: 1, c: ["Bardo", "Mago", "Stregone"], d: "Illusione visiva in un cubo di 4.5m." },
+    { n: "Eroismo", l: 1, c: ["Bardo", "Paladino", "Dominio della Guerra", "Dominio della Pace"], d: "Immunità paura e PF temporanei ogni turno." },
+    { n: "Fuoco Fatato", l: 1, c: ["Bardo", "Druido", "Artefice", "Dominio della Luce", "Dominio del Crepuscolo", "Dominio della Pace", "Magia Drow"], d: "Vantaggio ai TxC contro creature nell'area, niente invisibilità." },
+    { n: "Identificare", l: 1, c: ["Bardo", "Mago", "Artefice", "Dominio della Forgia"], d: "Rivela proprietà magiche di un oggetto." },
+    { n: "Immagine Silenziosa", l: 1, c: ["Bardo", "Mago", "Stregone", "Patto: Il Signore Fatato"], d: "Illusione visiva in un cubo di 4.5m." },
     { n: "Individuazione del Magico", l: 1, c: ["Tutti"], d: "Percepisci presenza di magia entro 9m." },
-    { n: "Infliggere Ferite", l: 1, c: ["Chierico", "Stregone"], d: "3d10 danni necrotici a contatto." }, // Stregone (Divina)
+    { n: "Infliggere Ferite", l: 1, c: ["Chierico", "Origine: Anima Divina", "Patto: Il Non Morto"], d: "3d10 danni necrotici a contatto." },
     { n: "Intralciare", l: 1, c: ["Druido"], d: "Rovi trattengono creature in area 6m (TS Forza)." },
-    { n: "Malocchio", l: 1, c: ["Warlock"], d: "+1d6 danni necrotici su ogni colpo, svantaggio su caratteristica." },
-    { n: "Mani Brucianti", l: 1, c: ["Mago", "Stregone", "Chierico", "Warlock"], d: "Cono 4.5m, 3d6 fuoco, dimezza TS Des." }, // Chierico (Luce), Warlock (Immondo)
-    { n: "Marchio del Cacciatore", l: 1, c: ["Ranger", "Paladino"], d: "+1d6 danni arma e vantaggio sopravvivenza/percezione." },
-    { n: "Nube di Nebbia", l: 1, c: ["Druido", "Ranger", "Mago", "Stregone", "Chierico"], d: "Crea area pesantemente oscurata." }, // Chierico (Tempesta)
-    { n: "Onda Tonante", l: 1, c: ["Bardo", "Druido", "Mago", "Stregone", "Chierico"], d: "Cubo 4.5m. 2d8 tuono e spinge via 3m." }, // Chierico (Tempesta)
-    { n: "Parola Guaritrice", l: 1, c: ["Bardo", "Chierico", "Druido", "Stregone"], d: "Bonus action: cura 1d4 + mod a distanza." }, // Stregone (Divina)
+    { n: "Malocchio", l: 1, c: ["Warlock", "Giuramento della Vendetta"], d: "+1d6 danni necrotici su ogni colpo, svantaggio su caratteristica." },
+    { n: "Mani Brucianti", l: 1, c: ["Mago", "Stregone", "Dominio della Luce", "Patto: L'Immondo", "Patto: Il Genio"], d: "Cono 4.5m, 3d6 fuoco, dimezza TS Des." },
+    { n: "Marchio del Cacciatore", l: 1, c: ["Ranger", "Paladino", "Giuramento della Vendetta"], d: "+1d6 danni arma e vantaggio sopravvivenza/percezione." },
+    { n: "Nube di Nebbia", l: 1, c: ["Druido", "Ranger", "Mago", "Stregone", "Dominio della Tempesta"], d: "Crea area pesantemente oscurata." },
+    { n: "Onda Tonante", l: 1, c: ["Bardo", "Druido", "Mago", "Stregone", "Dominio della Tempesta", "Patto: Il Genio", "Patto: L'Insondabile", "Armaiolo"], d: "Cubo 4.5m. 2d8 tuono e spinge via 3m." },
+    { n: "Parola Guaritrice", l: 1, c: ["Bardo", "Chierico", "Druido", "Origine: Anima Divina", "Alchimista"], d: "Bonus action: cura 1d4 + mod a distanza." },
     { n: "Passo Veloce", l: 1, c: ["Bardo", "Druido", "Ranger", "Mago", "Artefice"], d: "Longstrider. +3m velocità per 1 ora." },
-    { n: "Protezione dal Bene e dal Male", l: 1, c: ["Chierico", "Paladino", "Warlock", "Mago", "Stregone"], d: "Immondi/Non morti hanno svantaggio a colpirti." }, // Stregone (Anima Meccanica)
-    { n: "Reprimenda Infernale", l: 1, c: ["Warlock", "Tiefling"], d: "Reazione. 2d10 fuoco a chi ti colpisce." },
+    { n: "Protezione dal Bene e dal Male", l: 1, c: ["Chierico", "Paladino", "Warlock", "Mago", "Origine: Anima Meccanica"], d: "Immondi/Non morti hanno svantaggio a colpirti." },
+    { n: "Reprimenda Infernale", l: 1, c: ["Warlock", "Eredità Infernale", "Giuramento di Conquista"], d: "Reazione. 2d10 fuoco a chi ti colpisce." },
     { n: "Ritirata Rapida", l: 1, c: ["Stregone", "Warlock", "Mago", "Artefice"], d: "Bonus Action. Puoi usare Scattare come azione bonus per la durata." },
-    { n: "Risata Incontenibile di Tasha", l: 1, c: ["Bardo", "Mago", "Stregone"], d: "Bersaglio prono e inabile se fallisce TS Saggezza (ride)." }, // Stregone (Mente Aberrante)
+    { n: "Risata Incontenibile di Tasha", l: 1, c: ["Bardo", "Mago", "Stregone", "Patto: Il Grande Antico"], d: "Bersaglio prono e inabile se fallisce TS Saggezza (ride)." },
     { n: "Saltare", l: 1, c: ["Druido", "Ranger", "Stregone", "Mago", "Artefice"], d: "Triplica la distanza di salto." },
-    { n: "Scudo", l: 1, c: ["Mago", "Stregone", "Warlock"], d: "Reazione: +5 CA e immunità a Dardo Incantato." }, // Warlock (Hexblade)
-    { n: "Scudo della Fede", l: 1, c: ["Chierico", "Paladino", "Stregone"], d: "+2 CA a una creatura per 10 min." }, // Stregone (Divina)
+    { n: "Scudo", l: 1, c: ["Mago", "Stregone", "Patto: Lama del Malocchio (Hexblade)", "Fabbro da Battaglia"], d: "Reazione: +5 CA e immunità a Dardo Incantato." },
+    { n: "Scudo della Fede", l: 1, c: ["Chierico", "Paladino", "Origine: Anima Divina"], d: "+2 CA a una creatura per 10 min." },
+    { n: "Servitore Inosservato", l: 1, c: ["Bardo", "Warlock", "Mago"], d: "Forza invisibile che esegue compiti semplici." },
     { n: "Sfera Cromatica", l: 1, c: ["Mago", "Stregone"], d: "3d8 danni elementali a scelta (fuoco, freddo, fulmine, ecc)." },
-    { n: "Sonno", l: 1, c: ["Bardo", "Mago", "Stregone", "Chierico"], d: "Addormenta creature per 5d8 PF totali." }, // Chierico (Crepuscolo)
-    { n: "Sussurri Dissonanti", l: 1, c: ["Bardo", "Stregone"], d: "3d6 psichici e il bersaglio deve usare reazione per fuggire." }, // Stregone (Mente Aberrante)
+    { n: "Sonno", l: 1, c: ["Bardo", "Mago", "Stregone", "Dominio del Crepuscolo", "Patto: Il Signore Fatato", "Giuramento di Redenzione"], d: "Addormenta creature per 5d8 PF totali." },
+    { n: "Sussurri Dissonanti", l: 1, c: ["Bardo", "Origine: Mente Aberrante", "Patto: Il Grande Antico"], d: "3d6 psichici e il bersaglio deve usare reazione per fuggire." },
     { n: "Unto", l: 1, c: ["Mago", "Artefice", "Stregone"], d: "Terreno scivoloso (TS Dex o prono)." },
-    { n: "Vita Falsata", l: 1, c: ["Mago", "Stregone", "Artefice"], d: "Guadagni 1d4+4 PF temporanei." },
+    { n: "Vita Falsata", l: 1, c: ["Mago", "Stregone", "Artefice", "Dominio della Morte", "Patto: Il Non Morto"], d: "Guadagni 1d4+4 PF temporanei." },
 
     // --- LIVELLO 2 ---
-    { n: "Aiuto", l: 2, c: ["Chierico", "Paladino", "Artefice", "Stregone"], d: "+5 PF max e attuali a 3 creature per 8 ore." }, // Stregone (Anima Meccanica)
+    { n: "Aiuto", l: 2, c: ["Chierico", "Paladino", "Artefice", "Origine: Anima Meccanica", "Origine: Anima Divina", "Dominio della Pace"], d: "+5 PF max e attuali a 3 creature per 8 ore." },
     { n: "Alterare Se Stesso", l: 2, c: ["Mago", "Stregone", "Artefice"], d: "Respirare acqua, armi naturali o cambio aspetto." },
-    { n: "Arma Magica", l: 2, c: ["Mago", "Paladino", "Artefice"], d: "Arma diventa magica +1." },
-    { n: "Arma Spirituale", l: 2, c: ["Chierico", "Stregone"], d: "Bonus Action. Arma spettrale attacca 1d8+mod." }, // Stregone (Divina)
+    { n: "Arma Magica", l: 2, c: ["Mago", "Paladino", "Artefice", "Stregone", "Dominio della Guerra", "Dominio della Forgia"], d: "Arma diventa magica +1." },
+    { n: "Arma Spirituale", l: 2, c: ["Chierico", "Origine: Anima Divina", "Giuramento di Conquista"], d: "Bonus Action. Arma spettrale attacca 1d8+mod." },
     { n: "Bocca Magica", l: 2, c: ["Bardo", "Mago", "Artefice"], d: "Oggetto parla quando si attiva un trigger." },
-    { n: "Calmare Emozioni", l: 2, c: ["Bardo", "Chierico", "Stregone"], d: "Sopprime paura/charme o rende indifferenti creature ostili." }, // Stregone (Mente Aberrante)
-    { n: "Cecità/Sordità", l: 2, c: ["Bardo", "Chierico", "Mago", "Stregone"], d: "Rende cieco o sordo un bersaglio. TS Cos." },
-    { n: "Crescita di Spine", l: 2, c: ["Druido", "Ranger"], d: "Terreno difficile, 2d4 danni ogni 1.5m di movimento." },
-    { n: "Frantumare", l: 2, c: ["Bardo", "Chierico", "Mago", "Stregone", "Warlock"], d: "Sfera raggio 3m, 3d8 tuono, TS Cos dimezza. Danni a oggetti/costrutti." }, // Chierico (Tempesta)
-    { n: "Immagine Speculare", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock", "Chierico"], d: "Crea 3 copie illusorie che possono assorbire gli attacchi." }, // Chierico (Inganno)
-    { n: "Immobilizza Persone", l: 2, c: ["Bardo", "Chierico", "Druido", "Mago", "Stregone", "Warlock"], d: "Paralizza umanoide su TS Saggezza fallito." },
-    { n: "Individuazione dei Pensieri", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Leggi pensieri superficiali o profondi." }, // Stregone (Mente Aberrante)
+    { n: "Calmare Emozioni", l: 2, c: ["Bardo", "Chierico", "Origine: Mente Aberrante", "Giuramento di Redenzione", "Patto: Il Signore Fatato"], d: "Sopprime paura/charme o rende indifferenti creature ostili." },
+    { n: "Cecità/Sordità", l: 2, c: ["Bardo", "Chierico", "Mago", "Stregone", "Patto: Il Non Morto", "Patto: L'Immondo"], d: "Rende cieco o sordo un bersaglio. TS Cos." },
+    { n: "Crescita di Spine", l: 2, c: ["Druido", "Ranger", "Dominio della Natura", "Patto: Il Genio"], d: "Terreno difficile, 2d4 danni ogni 1.5m di movimento." },
+    { n: "Frantumare", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock", "Dominio della Tempesta", "Armaiolo"], d: "Sfera raggio 3m, 3d8 tuono, TS Cos dimezza. Danni a oggetti/costrutti." },
+    { n: "Immagine Speculare", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock", "Dominio dell'Inganno", "Circolo della Terra", "Armaiolo"], d: "Crea 3 copie illusorie che possono assorbire gli attacchi." },
+    { n: "Immobilizza Persone", l: 2, c: ["Bardo", "Chierico", "Druido", "Mago", "Stregone", "Warlock", "Giuramento di Vendetta", "Dominio dell'Ordine"], d: "Paralizza umanoide su TS Saggezza fallito." },
+    { n: "Individuazione dei Pensieri", l: 2, c: ["Bardo", "Mago", "Stregone", "Origine: Mente Aberrante", "Patto: Il Grande Antico", "Dominio della Conoscenza"], d: "Leggi pensieri superficiali o profondi." },
     { n: "Ingrandire/Ridurre", l: 2, c: ["Mago", "Stregone", "Artefice"], d: "Modifica taglia creatura/oggetto. +1d4/-1d4 danni." },
-    { n: "Invisibilità", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock", "Artefice", "Druido"], d: "Creatura invisibile finché non attacca/lancia incantesimi." }, // Druido (Terra)
+    { n: "Invisibilità", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock", "Artefice", "Circolo della Terra", "Dominio del Crepuscolo", "Tocco d'Ombra"], d: "Creatura invisibile finché non attacca/lancia incantesimi." },
+    { n: "Lama d'Ombra", l: 2, c: ["Mago", "Stregone", "Warlock"], d: "Shadow Blade. Spada magica fa 2d8 psichici. Vantaggio al buio." },
     { n: "Levitazione", l: 2, c: ["Mago", "Stregone", "Artefice"], d: "Creatura o oggetto fluttua verticalmente (fino a 250kg)." },
     { n: "Mano Spettrale", l: 2, c: ["Mago"], d: "Mano grande che spinge o danneggia." },
-    { n: "Messaggio", l: 2, c: ["Bardo", "Chierico", "Mago", "Stregone", "Warlock"], d: "Sending. Invii messaggio mentale ovunque (anche altri piani)." }, // Stregone (Mente Aberrante)
+    { n: "Messaggio", l: 2, c: ["Bardo", "Chierico", "Mago", "Stregone", "Origine: Mente Aberrante", "Patto: Il Grande Antico"], d: "Sending. Invii messaggio mentale ovunque (anche altri piani)." },
     { n: "Nube di Pugnali", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "4d4 danni in area 1.5m. Nessun TS." },
-    { n: "Oscurità", l: 2, c: ["Mago", "Stregone", "Warlock", "Tiefling"], d: "Sfera di oscurità magica impenetrabile a scurovisione." },
-    { n: "Passare Senza Tracce", l: 2, c: ["Druido", "Ranger", "Chierico"], d: "+10 Furtività al gruppo, non lasciate tracce." }, // Chierico (Inganno)
-    { n: "Passo Velato", l: 2, c: ["Mago", "Stregone", "Warlock", "Ranger", "Druido"], d: "Teletrasporto 9m come azione bonus." }, // Druido (Terra)
-    { n: "Pelle Coriacea", l: 2, c: ["Druido", "Ranger"], d: "La CA non può essere inferiore a 16." },
-    { n: "Raggio di Affaticamento", l: 2, c: ["Mago", "Stregone", "Warlock"], d: "Ray of Enfeeblement. Dimezza i danni forza del bersaglio." },
-    { n: "Raggio di Luna", l: 2, c: ["Druido", "Chierico", "Paladino"], d: "Cilindro di luce fa 2d10 radiosi (TS Cos) e impedisce mutaforma." }, // Chierico (Crepuscolo), Paladino (Antichi)
-    { n: "Raggio Rovente", l: 2, c: ["Mago", "Stregone", "Chierico", "Warlock"], d: "3 raggi, 2d6 fuoco ciascuno." }, // Chierico (Luce), Warlock (Immondo/Genio)
-    { n: "Ragnatela", l: 2, c: ["Mago", "Stregone", "Artefice"], d: "Intrappola creature in cubo 6m (TS Dex o Forza per uscire)." },
-    { n: "Ristorare Inferiore", l: 2, c: ["Bardo", "Chierico", "Druido", "Paladino", "Ranger", "Artefice", "Stregone"], d: "Cura cecità, sordità, paralisi o veleno." }, // Stregone (Anima Meccanica/Divina)
+    { n: "Oscurità", l: 2, c: ["Mago", "Stregone", "Warlock", "Eredità Infernale", "Magia Drow", "Circolo della Terra"], d: "Sfera di oscurità magica impenetrabile a scurovisione." },
+    { n: "Passare Senza Tracce", l: 2, c: ["Druido", "Ranger", "Dominio dell'Inganno", "Monaco"], d: "+10 Furtività al gruppo, non lasciate tracce." },
+    { n: "Passo Velato", l: 2, c: ["Mago", "Stregone", "Warlock", "Ranger", "Druido", "Circolo della Terra", "Giuramento degli Antichi", "Giuramento della Vendetta", "Patto: Il Signore Fatato", "Tocco Fatato"], d: "Teletrasporto 9m come azione bonus." },
+    { n: "Pelle Coriacea", l: 2, c: ["Druido", "Ranger", "Dominio della Natura"], d: "La CA non può essere inferiore a 16." },
+    { n: "Raggio di Affaticamento", l: 2, c: ["Mago", "Stregone", "Warlock", "Dominio della Morte"], d: "Ray of Enfeeblement. Dimezza i danni forza del bersaglio." },
+    { n: "Raggio di Luna", l: 2, c: ["Druido", "Dominio del Crepuscolo", "Giuramento degli Antichi", "Giuramento degli Osservatori"], d: "Cilindro di luce fa 2d10 radiosi (TS Cos) e impedisce mutaforma." },
+    { n: "Raggio Rovente", l: 2, c: ["Mago", "Stregone", "Dominio della Luce", "Patto: L'Immondo", "Patto: Il Genio", "Artigliere", "Circolo del Fuoco Selvaggio"], d: "3 raggi, 2d6 fuoco ciascuno." },
+    { n: "Ragnatela", l: 2, c: ["Mago", "Stregone", "Artefice", "Circolo della Terra", "Conclave: Sciame"], d: "Intrappola creature in cubo 6m (TS Dex o Forza per uscire)." },
+    { n: "Ristorare Inferiore", l: 2, c: ["Bardo", "Chierico", "Druido", "Paladino", "Ranger", "Artefice", "Origine: Anima Meccanica", "Origine: Anima Divina", "Patto: Il Celestiale"], d: "Cura cecità, sordità, paralisi o veleno." },
     { n: "Serratura Arcana", l: 2, c: ["Mago", "Artefice"], d: "Chiude magicamente una porta o scrigno. +10 CD scassinare." },
-    { n: "Suggestione", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Costringe creatura a seguire un corso d'azione ragionevole." },
-    { n: "Vedere Invisibilità", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Vedi creature invisibili ed eteree." },
+    { n: "Silenzio", l: 2, c: ["Bardo", "Chierico", "Ranger", "Origine: Anima Divina", "Patto: L'Insondabile"], d: "Nessun suono in sfera 6m. Immunità danni tuono, no incantesimi verbali." },
+    { n: "Suggestione", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock", "Dominio della Conoscenza"], d: "Costringe creatura a seguire un corso d'azione ragionevole." },
+    { n: "Vedere Invisibilità", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock", "Dominio del Crepuscolo"], d: "Vedi creature invisibili ed eteree." },
     
     // --- LIVELLO 3 ---
-    { n: "Animare Morti", l: 3, c: ["Chierico", "Mago", "Stregone"], d: "Crea scheletro o zombi da cadavere." }, // Stregone (Divina/Tasha)
-    { n: "Controincantesimo", l: 3, c: ["Mago", "Stregone", "Warlock"], d: "Reazione. Interrompi incantesimo avversario." },
+    { n: "Animare Morti", l: 3, c: ["Chierico", "Mago", "Origine: Anima Divina", "Patto: Il Non Morto", "Dominio della Morte", "Giuramento Infranto"], d: "Crea scheletro o zombi da cadavere." },
+    { n: "Controincantesimo", l: 3, c: ["Mago", "Stregone", "Warlock", "Giuramento di Redenzione", "Giuramento degli Osservatori"], d: "Reazione. Interrompi incantesimo avversario." },
     { n: "Dissolvi Magie", l: 3, c: ["Bardo", "Chierico", "Druido", "Paladino", "Stregone", "Warlock", "Mago", "Artefice"], d: "Termina effetti magici su bersaglio." },
-    { n: "Fame di Hadar", l: 3, c: ["Warlock", "Stregone"], d: "Sfera di oscurità e freddo/acido. Difficile uscirne." }, // Stregone (Mente Aberrante)
-    { n: "Fulmine", l: 3, c: ["Mago", "Stregone", "Druido"], d: "Linea 30m, 8d6 fulmine." }, // Druido (Montagna/Terra)
+    { n: "Fame di Hadar", l: 3, c: ["Warlock", "Origine: Mente Aberrante"], d: "Sfera di oscurità e freddo/acido. Difficile uscirne." },
+    { n: "Fulmine", l: 3, c: ["Mago", "Stregone", "Circolo della Terra", "Armaiolo"], d: "Linea 30m, 8d6 fulmine." },
     { n: "Immagine Maggiore", l: 3, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Illusione completa (visiva, sonora, termica) in cubo 6m." },
-    { n: "Invocare il Fulmine", l: 3, c: ["Druido", "Chierico"], d: "Fulmini in area 3d10 ogni turno." }, // Chierico (Tempesta)
-    { n: "Palla di Fuoco", l: 3, c: ["Mago", "Stregone", "Warlock", "Chierico"], d: "8d6 fuoco in raggio 6m." }, // Warlock (Immondo), Chierico (Luce)
-    { n: "Parola Guaritrice di Massa", l: 3, c: ["Chierico", "Stregone"], d: "Cura 1d4+mod a 6 creature, Bonus Action." }, // Stregone (Divina)
-    { n: "Paura", l: 3, c: ["Bardo", "Mago", "Stregone", "Warlock", "Paladino"], d: "Cono 9m, creature lasciano cadere oggetti e fuggono." }, // Paladino (Conquista)
+    { n: "Invocare il Fulmine", l: 3, c: ["Druido", "Dominio della Tempesta", "Patto: L'Insondabile"], d: "Fulmini in area 3d10 ogni turno." },
+    { n: "Lentezza", l: 3, c: ["Mago", "Stregone", "Warlock", "Dominio dell'Ordine", "Circolo della Terra"], d: "Rallenta fino a 6 creature. -2 CA e TS Des, 1 azione/turno." },
+    { n: "Palla di Fuoco", l: 3, c: ["Mago", "Stregone", "Dominio della Luce", "Patto: L'Immondo", "Patto: Il Genio", "Artigliere"], d: "8d6 fuoco in raggio 6m." },
+    { n: "Parola Guaritrice di Massa", l: 3, c: ["Chierico", "Origine: Anima Divina", "Alchimista"], d: "Cura 1d4+mod a 6 creature, Bonus Action." },
+    { n: "Passo del Tuono", l: 3, c: ["Mago", "Stregone", "Warlock", "Armaiolo"], d: "Thunder Step. Teletrasporto 27m + 3d10 danni tuono dove eri." },
+    { n: "Paura", l: 3, c: ["Bardo", "Mago", "Stregone", "Warlock", "Giuramento di Conquista", "Conclave: Cacciatore delle Tenebre"], d: "Cono 9m, creature lasciano cadere oggetti e fuggono." },
     { n: "Respirare Sott'acqua", l: 3, c: ["Druido", "Ranger", "Mago", "Stregone", "Artefice"], d: "10 creature respirano acqua per 24h." },
-    { n: "Rianimare Morti", l: 3, c: ["Bardo", "Chierico", "Paladino", "Stregone", "Ranger", "Druido"], d: "Rinascita (Revivify). Ritorna in vita creatura morta da <1 min (costo 300mo)." }, // Stregone (Divina), Ranger (Tasha), Druido (Fuoco Selvatico)
-    { n: "Spiriti Guardiani", l: 3, c: ["Chierico", "Paladino", "Stregone"], d: "Aura dannosa 3d8 (radiosi/necrotici) attorno a te." }, // Stregone (Divina)
-    { n: "Trama Ipnotica", l: 3, c: ["Bardo", "Mago", "Stregone", "Warlock", "Paladino"], d: "Creature in cubo 9m affascinate e inabili." }, // Paladino (Redenzione)
-    { n: "Velocità", l: 3, c: ["Mago", "Stregone", "Artefice", "Ranger"], d: "+2 CA, raddoppia velocità, azione extra (Haste)." }, // Ranger (Orizzonte)
+    { n: "Rianimare Morti", l: 3, c: ["Bardo", "Chierico", "Paladino", "Ranger", "Druido", "Origine: Anima Divina", "Patto: Il Celestiale", "Alchimista"], d: "Rinascita (Revivify). Ritorna in vita creatura morta da <1 min (costo 300mo)." },
+    { n: "Spiriti Guardiani", l: 3, c: ["Chierico", "Paladino", "Origine: Anima Divina", "Giuramento della Corona"], d: "Aura dannosa 3d8 (radiosi/necrotici) attorno a te." },
+    { n: "Tocco del Vampiro", l: 3, c: ["Warlock", "Mago", "Stregone", "Dominio della Morte", "Dominio della Tomba"], d: "3d6 necrotici, ti curi di metà danno." },
+    { n: "Trama Ipnotica", l: 3, c: ["Bardo", "Mago", "Stregone", "Warlock", "Giuramento di Redenzione", "Armaiolo"], d: "Creature in cubo 9m affascinate e inabili." },
+    { n: "Velocità", l: 3, c: ["Mago", "Stregone", "Artefice", "Conclave: Camminatore dell'Orizzonte", "Giuramento di Vendetta", "Giuramento di Gloria"], d: "+2 CA, raddoppia velocità, azione extra (Haste)." },
     { n: "Volare", l: 3, c: ["Mago", "Stregone", "Warlock", "Artefice"], d: "Velocità volo 18m." },
     
     // --- LIVELLO 4 ---
-    { n: "Bandimento", l: 4, c: ["Chierico", "Mago", "Paladino", "Stregone", "Warlock"], d: "Esilia una creatura su un altro piano (permanente se 1 min)." },
-    { n: "Invisibilità Superiore", l: 4, c: ["Bardo", "Mago", "Stregone", "Warlock", "Chierico"], d: "Invisibile anche se attacchi, per 1 min." }, // Chierico (Crepuscolo), Warlock (Genio/Archfey)
-    { n: "Metamorfosi", l: 4, c: ["Bardo", "Druido", "Mago", "Stregone"], d: "Trasforma creatura in bestia (Polymorph)." },
-    { n: "Muro di Fuoco", l: 4, c: ["Druido", "Mago", "Stregone", "Chierico", "Warlock"], d: "Muro fa 5d8 fuoco a chi attraversa." }, // Chierico (Luce), Warlock (Immondo)
-    { n: "Porta Dimensionale", l: 4, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Teletrasporto 150m con un passeggero." },
-    { n: "Tentacoli Neri di Evard", l: 4, c: ["Mago", "Stregone"], d: "Area difficile, trattiene e fa danni." }, // Stregone (Mente Aberrante)
-    { n: "Terreno Illusorio", l: 4, c: ["Bardo", "Druido", "Mago", "Warlock"], d: "Maschera il terreno naturale." },
+    { n: "Bandimento", l: 4, c: ["Chierico", "Mago", "Paladino", "Stregone", "Warlock", "Giuramento degli Osservatori"], d: "Esilia una creatura su un altro piano (permanente se 1 min)." },
+    { n: "Invisibilità Superiore", l: 4, c: ["Bardo", "Mago", "Stregone", "Warlock", "Dominio del Crepuscolo", "Patto: Il Signore Fatato", "Patto: Il Genio", "Patto: Il Non Morto", "Conclave: Cacciatore delle Tenebre"], d: "Invisibile anche se attacchi, per 1 min." },
+    { n: "Metamorfosi", l: 4, c: ["Bardo", "Druido", "Mago", "Stregone", "Dominio dell'Inganno"], d: "Trasforma creatura in bestia (Polymorph)." },
+    { n: "Muro di Fuoco", l: 4, c: ["Druido", "Mago", "Stregone", "Dominio della Luce", "Patto: L'Immondo", "Patto: Il Celestiale", "Circolo del Fuoco Selvaggio", "Artigliere"], d: "Muro fa 5d8 fuoco a chi attraversa." },
+    { n: "Occhio Arcano", l: 4, c: ["Chierico", "Mago", "Artefice", "Dominio della Conoscenza"], d: "Occhio invisibile che vola e trasmette visione." },
+    { n: "Porta Dimensionale", l: 4, c: ["Bardo", "Mago", "Stregone", "Warlock", "Dominio dell'Inganno", "Giuramento di Vendetta", "Conclave: Camminatore dell'Orizzonte"], d: "Teletrasporto 150m con un passeggero." },
+    { n: "Tentacoli Neri di Evard", l: 4, c: ["Mago", "Origine: Mente Aberrante", "Patto: L'Insondabile"], d: "Area difficile, trattiene e fa danni." },
+    { n: "Terreno Illusorio", l: 4, c: ["Bardo", "Druido", "Mago", "Warlock", "Dominio dell'Inganno"], d: "Maschera il terreno naturale." },
+    { n: "Tempesta di Ghiaccio", l: 4, c: ["Druido", "Mago", "Stregone", "Dominio della Tempesta"], d: "2d8 contundenti + 4d6 freddo in cilindro." },
 
     // --- LIVELLO 5 ---
-    { n: "Guarigione Superiore", l: 5, c: ["Bardo", "Chierico", "Druido", "Stregone", "Warlock"], d: "Cura 4d8 + mod a creature multiple." }, // Stregone (Divina), Warlock (Celestiale)
-    { n: "Rianimare", l: 5, c: ["Bardo", "Chierico", "Paladino", "Stregone"], d: "Raise Dead. Ritorna in vita morto da <10 giorni." }, // Stregone (Divina)
-    { n: "Muro di Forza", l: 5, c: ["Mago", "Artefice"], d: "Crea barriera indistruttibile." }, // Artefice (Armaiolo)
-    { n: "Legame Telepatico", l: 5, c: ["Bardo", "Mago", "Artefice", "Stregone"], d: "Rary's Telepathic Bond. Comunicazione telepatica per il gruppo." }, // Stregone (Mente Aberrante)
-    { n: "Telecinesi", l: 5, c: ["Mago", "Stregone"], d: "Muovi oggetti o creature con la mente." }
+    { n: "Animare Oggetti", l: 5, c: ["Bardo", "Mago", "Stregone", "Artefice", "Dominio della Forgia"], d: "Animi fino a 10 oggetti che attaccano." },
+    { n: "Blocca Mostri", l: 5, c: ["Bardo", "Mago", "Stregone", "Warlock", "Giuramento di Redenzione", "Giuramento di Vendetta", "Giuramento di Conquista"], d: "Paralizza qualsiasi creatura su TS Sag." },
+    { n: "Guarigione Superiore", l: 5, c: ["Bardo", "Chierico", "Druido", "Origine: Anima Divina", "Patto: Il Celestiale", "Alchimista"], d: "Cura 4d8 + mod a creature multiple." },
+    { n: "Legame Telepatico", l: 5, c: ["Bardo", "Mago", "Artefice", "Origine: Mente Aberrante", "Dominio della Pace"], d: "Rary's Telepathic Bond. Comunicazione telepatica per il gruppo." },
+    { n: "Muro di Forza", l: 5, c: ["Mago", "Armaiolo"], d: "Crea barriera indistruttibile." },
+    { n: "Rianimare", l: 5, c: ["Bardo", "Chierico", "Paladino", "Origine: Anima Divina", "Alchimista"], d: "Raise Dead. Ritorna in vita morto da <10 giorni." },
+    { n: "Telecinesi", l: 5, c: ["Mago", "Stregone", "Origine: Mente Aberrante", "Patto: Il Grande Antico"], d: "Muovi oggetti o creature con la mente." }
 ];
 
-// --- DATA: FEATURES DB (Structured & Expanded) ---
+// --- DATA: FEATURES DB (LISTA COMPLETA) ---
 const FEATURE_DB = [
     // SOTTOCLASSI STREGONE
-    { n: "Origine: Discendenza Draconica", type: "Origine", req: "Stregone", d: "+1 PF per livello, pelle scagliosa (CA 13+Des)." },
+    { n: "Origine: Discendenza Draconica", type: "Origine", req: "Stregone", d: "+1 PF per livello, pelle scagliosa (CA 13+Des), danni elementali bonus." },
     { n: "Origine: Magia Selvaggia", type: "Origine", req: "Stregone", d: "Possibilità di effetti casuali (Surge) dopo incantesimi di lv 1+." },
     { n: "Origine: Anima Divina", type: "Origine", req: "Stregone", d: "Accesso alla lista incantesimi da Chierico, Favore degli Dei (2d4 al TS)." },
-    { n: "Origine: Stregoneria delle Ombre", type: "Origine", req: "Stregone", d: "Scurovisione 36m, Forza della Tomba (Sopravvivi a 1PF)." },
+    { n: "Origine: Stregoneria delle Ombre", type: "Origine", req: "Stregone", d: "Scurovisione 36m, Forza della Tomba (Sopravvivi a 1PF), cane d'ombra." },
     { n: "Origine: Tempesta", type: "Origine", req: "Stregone", d: "Volo limitato, danni tuono/fulmine extra." },
     { n: "Origine: Mente Aberrante", type: "Origine", req: "Stregone", d: "Incantesimi Psionici (es. Sussurri Dissonanti), Telepatia entro 9m." },
     { n: "Origine: Anima Meccanica", type: "Origine", req: "Stregone", d: "Clockwork Soul. Annulla Vantaggio/Svantaggio, Scudo Bastione." },
@@ -169,18 +180,19 @@ const FEATURE_DB = [
     { n: "Patto: L'Insondabile", type: "Origine", req: "Warlock", d: "Fathomless. Tentacolo d'acqua attacca e rallenta." },
 
     // SOTTOCLASSI CHIERICO
-    { n: "Dominio della Vita", type: "Origine", req: "Chierico", d: "Bonus cure: 2 + livello incantesimo." },
-    { n: "Dominio della Guerra", type: "Origine", req: "Chierico", d: "Azione bonus per fare un attacco extra (limitato)." },
+    { n: "Dominio della Vita", type: "Origine", req: "Chierico", d: "Bonus cure: 2 + livello incantesimo. Armatura pesante." },
+    { n: "Dominio della Guerra", type: "Origine", req: "Chierico", d: "Azione bonus per fare un attacco extra (limitato). Armatura pesante." },
     { n: "Dominio della Luce", type: "Origine", req: "Chierico", d: "Bagliore protettivo, accesso a Palla di Fuoco." },
-    { n: "Dominio della Tempesta", type: "Origine", req: "Chierico", d: "Reazione per danni tuono/fulmine." },
+    { n: "Dominio della Tempesta", type: "Origine", req: "Chierico", d: "Reazione per danni tuono/fulmine. Armatura pesante." },
     { n: "Dominio dell'Inganno", type: "Origine", req: "Chierico", d: "Vantaggio Furtività, Duplicato Illusorio." },
     { n: "Dominio del Crepuscolo", type: "Origine", req: "Chierico", d: "Scurovisione 90m, Iniziativa Vantaggio, Santuario del Crepuscolo (PF Temp)." },
     { n: "Dominio della Pace", type: "Origine", req: "Chierico", d: "Legame Emboldening (+1d4 a TxC/TS)." },
     { n: "Dominio della Natura", type: "Origine", req: "Chierico", d: "Competenza armatura pesante, abilità natura, charme animali." },
     { n: "Dominio della Conoscenza", type: "Origine", req: "Chierico", d: "Competenze esperte, lettura pensieri." },
     { n: "Dominio della Morte", type: "Origine", req: "Chierico", d: "Mietitore (Necromanzia su 2 bersagli), Tocco della Morte." },
-    { n: "Dominio della Forgia", type: "Origine", req: "Chierico", d: "Arma/Armatura +1 magica." },
+    { n: "Dominio della Forgia", type: "Origine", req: "Chierico", d: "Arma/Armatura +1 magica. Armatura pesante." },
     { n: "Dominio dell'Ordine", type: "Origine", req: "Chierico", d: "Alleato attacca quando lo potenzi." },
+    { n: "Dominio Arcano", type: "Origine", req: "Chierico", d: "Incantesimi da Mago, scaccia creature magiche." },
 
     // SOTTOCLASSI PALADINO
     { n: "Giuramento di Devozione", type: "Origine", req: "Paladino", d: "Aura sacra, scaccia immondi, Arma Sacra." },
@@ -197,12 +209,12 @@ const FEATURE_DB = [
     { n: "Tradizione: Necromanzia", type: "Origine", req: "Mago", d: "Recuperi PF uccidendo nemici." },
     { n: "Tradizione: Divinazione", type: "Origine", req: "Mago", d: "Portento (sostituisci dadi)." },
     { n: "Tradizione: Lame Danzanti", type: "Origine", req: "Mago", d: "Bladesinging. Bonus CA e concentrazione in danza." },
-    { n: "Tradizione: Illusione", type: "Origine", req: "Mago", d: "Illusioni migliorate." },
+    { n: "Tradizione: Illusione", type: "Origine", req: "Mago", d: "Illusioni migliorate, reali al 14°." },
     { n: "Tradizione: Ammaliamento", type: "Origine", req: "Mago", d: "Sguardo ipnotico." },
     { n: "Tradizione: Trasmutazione", type: "Origine", req: "Mago", d: "Pietra del trasmutatore." },
     { n: "Tradizione: Evocazione", type: "Origine", req: "Mago", d: "Teletrasporto minore, evocazioni non perdono concentrazione." },
     { n: "Tradizione: Magia della Guerra", type: "Origine", req: "Mago", d: "+2 CA/TS come reazione, bonus iniziativa." },
-    { n: "Ordine degli Scribi", type: "Origine", req: "Mago", d: "Cambio tipo danni, lanciare tramite libro." },
+    { n: "Ordine degli Scribi", type: "Origine", req: "Mago", d: "Cambio tipo danni, lanciare tramite libro, drone libro." },
 
     // SOTTOCLASSI GUERRIERO
     { n: "Archetipo: Campione", type: "Origine", req: "Guerriero", d: "Critico con 19 o 20." },
@@ -212,7 +224,7 @@ const FEATURE_DB = [
     { n: "Archetipo: Arciere Arcano", type: "Origine", req: "Guerriero", d: "Frecce magiche con effetti." },
     { n: "Archetipo: Samurai", type: "Origine", req: "Guerriero", d: "Vantaggio a comando, PF temporanei." },
     { n: "Archetipo: Cavaliere delle Rune", type: "Origine", req: "Guerriero", d: "Diventi gigante, rune magiche su equipaggiamento." },
-    { n: "Archetipo: Cavaliere dell'Eco", type: "Origine", req: "Guerriero", d: "Evoca un eco per attaccare a distanza." },
+    { n: "Archetipo: Cavaliere dell'Eco", type: "Origine", req: "Guerriero", d: "Evoca un eco per attaccare a distanza e teletrasportarti." },
 
     // SOTTOCLASSI LADRO
     { n: "Archetipo: Furfante", type: "Origine", req: "Ladro", d: "Mani veloci, uso oggetti come bonus action." },
@@ -226,20 +238,21 @@ const FEATURE_DB = [
 
     // SOTTOCLASSI DRUIDO
     { n: "Circolo della Terra", type: "Origine", req: "Druido", d: "Recupero slot extra, magie del circolo (es. Invisibilità)." },
-    { n: "Circolo della Luna", type: "Origine", req: "Druido", d: "Forma Selvatica da Combattimento (azione bonus)." },
+    { n: "Circolo della Luna", type: "Origine", req: "Druido", d: "Forma Selvatica da Combattimento (azione bonus, bestie forti)." },
     { n: "Circolo delle Stelle", type: "Origine", req: "Druido", d: "Forma Stellata (bonus cure, danni o concentrazione)." },
     { n: "Circolo dei Pastori", type: "Origine", req: "Druido", d: "Shepherd. Totem spirituali, evocazioni potenziate." },
     { n: "Circolo delle Spore", type: "Origine", req: "Druido", d: "Danni necrotici aura, zombi fungini." },
     { n: "Circolo del Fuoco Selvaggio", type: "Origine", req: "Druido", d: "Spirito di fuoco che teletrasporta e fa danni." },
+    { n: "Circolo dei Sogni", type: "Origine", req: "Druido", d: "Riserva di dadi cura bonus action, teletrasporto." },
 
     // SOTTOCLASSI MONACO
     { n: "Via della Mano Aperta", type: "Origine", req: "Monaco", d: "Effetti extra su Raffica di Colpi." },
-    { n: "Via dell'Ombra", type: "Origine", req: "Monaco", d: "Incantesimi oscuri usando Ki." },
+    { n: "Via dell'Ombra", type: "Origine", req: "Monaco", d: "Incantesimi oscuri usando Ki, teletrasporto ombra." },
     { n: "Via dei Quattro Elementi", type: "Origine", req: "Monaco", d: "Magie elementali costose." },
-    { n: "Via del Kensei", type: "Origine", req: "Monaco", d: "Maestro d'armi, parata agile." },
+    { n: "Via del Kensei", type: "Origine", req: "Monaco", d: "Maestro d'armi, parata agile (+2 CA)." },
     { n: "Via del Maestro dell'Ubriaco", type: "Origine", req: "Monaco", d: "Disimpegno gratuito con raffica." },
-    { n: "Via dell'Anima Solare", type: "Origine", req: "Monaco", d: "Raggi radiosi a distanza." },
-    { n: "Via della Misericordia", type: "Origine", req: "Monaco", d: "Cura o ferisci con il tocco." },
+    { n: "Via dell'Anima Solare", type: "Origine", req: "Monaco", d: "Raggi radiosi a distanza (come Dragonball)." },
+    { n: "Via della Misericordia", type: "Origine", req: "Monaco", d: "Cura o ferisci con il tocco (maschera)." },
     { n: "Via del Drago Ascendente", type: "Origine", req: "Monaco", d: "Danni elementali, ali temporanee." },
 
     // SOTTOCLASSI RANGER
@@ -269,6 +282,7 @@ const FEATURE_DB = [
     { n: "Cammino della Bestia", type: "Origine", req: "Barbaro", d: "Armi naturali (artigli, morso, coda) in ira." },
     { n: "Cammino della Magia Selvaggia", type: "Origine", req: "Barbaro", d: "Effetto magico casuale quando entri in ira." },
     { n: "Cammino degli Antichi Guardiani", type: "Origine", req: "Barbaro", d: "Proteggi alleati marchiando i nemici." },
+    { n: "Cammino della Tempesta", type: "Origine", req: "Barbaro", d: "Aura elementale (Fuoco, Ghiaccio o Mare) mentre sei in ira." },
 
     // SOTTOCLASSI ARTEFICE
     { n: "Specialista: Alchimista", type: "Origine", req: "Artefice", d: "Elisir casuali o scelti." },
@@ -308,6 +322,7 @@ const FEATURE_DB = [
     { n: "Artigli del Gatto", type: "Razziale", req: "Tabaxi", d: "Velocità scalata e danni senz'armi 1d4 + For." },
     { n: "Armatura Naturale", type: "Razziale", req: "Tutti", d: "CA base 13 + Des (Lucertoloidi, Loxodon, ecc)." },
     { n: "Mutaforma", type: "Razziale", req: "Cangiante", d: "Cambi aspetto come azione." },
+    { n: "Tratto Genasi", type: "Razziale", req: "Genasi", d: "Resistenza a un elemento e incantesimo in base alla sottorazza." },
     
     // STILI DI COMBATTIMENTO
     { n: "Stile: Architettura", type: "Classe", req: "Tutti", d: "+2 ai TxC con armi a distanza (Guerriero/Ranger)." },
@@ -392,5 +407,8 @@ const FEATURE_DB = [
     { n: "Atleta", type: "Talento", req: "Tutti", d: "+1 For/Des, ti alzi da prono con 1.5m, scali velocità normale." },
     { n: "Combattente a Due Armi", type: "Talento", req: "Tutti", d: "+1 CA con due armi, puoi usare armi non leggere." },
     { n: "Adepto Marziale", type: "Talento", req: "Tutti", d: "Impari 2 manovre e 1 dado superiorità." },
-    { n: "Adepto Elementale", type: "Talento", req: "Tutti", d: "Ignori resistenza a un elemento. Gli 1 sui danni diventano 2." }
+    { n: "Adepto Elementale", type: "Talento", req: "Tutti", d: "Ignori resistenza a un elemento. Gli 1 sui danni diventano 2." },
+    { n: "Adepto Metamagico", type: "Talento", req: "Tutti", d: "Ottieni 2 Punti Stregoneria e 2 Opzioni di Metamagia." },
+    { n: "Iniziato al Combattimento", type: "Talento", req: "Tutti", d: "Ottieni uno stile di combattimento da Guerriero." },
+    { n: "Abile", type: "Talento", req: "Tutti", d: "Ottieni competenza in 3 abilità o strumenti." }
 ];
