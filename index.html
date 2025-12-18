@@ -677,7 +677,27 @@
                 }));
             };
 
-            const filteredSpells = SPELL_DB.filter(s => s.l === newSpellLvl && (s.c.includes(char.class) || char.class === 'Bardo'));
+            // Nuova logica di filtro avanzata
+            const filteredSpells = SPELL_DB.filter(s => {
+                // 1. Controllo Livello (fondamentale)
+                if (s.l !== newSpellLvl) return false;
+
+                // 2. Controllo Classe Base
+                const isClassMatch = s.c.includes(char.class) || char.class === 'Bardo';
+
+                // 3. Controllo Feature (Sottoclassi/Origini/Talenti)
+                // Controlla se l'incantesimo richiede una feature (es. "Dominio della Luce")
+                // e se il personaggio possiede quella feature nel suo array 'abilities'.
+                const hasFeature = s.c.some(req => char.abilities?.some(feat => feat.name === req));
+
+                // 4. Caso Speciale: Stregone Anima Divina (Origine: Anima Divina)
+                // Questa origine dà accesso all'intera lista del Chierico.
+                const isDivineSoul = char.class === 'Stregone' && char.abilities?.some(a => a.name === 'Origine: Anima Divina');
+                const isClericSpell = s.c.includes('Chierico');
+
+                return isClassMatch || hasFeature || (isDivineSoul && isClericSpell);
+            });
+
             const filteredFeats = FEATURE_DB.filter(f => {
                 if (featType === 'Razza') return f.type === 'Razziale' && (f.req === char.race || f.req === 'Tutti');
                 if (featType === 'Classe') return f.type === 'Classe' && (f.req === char.class || f.req === 'Tutti');
