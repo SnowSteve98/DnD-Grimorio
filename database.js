@@ -1,4 +1,4 @@
-// --- DATA: SPELL SRD DATABASE (LISTA COMPLETA 5E AGGIORNATA CON LOGICA ORIGINI) ---
+// --- DATA: SPELL SRD DATABASE (LISTA COMPLETA 5E AGGIORNATA & CORRETTA) ---
 const SPELL_DB = [
     // --- CANTRIPS (Livello 0) ---
     { n: "Amicizia", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Vantaggio su prove di Carisma contro creatura non ostile. Diventa ostile dopo 1 min." },
@@ -17,7 +17,7 @@ const SPELL_DB = [
     { n: "Lama Rimbombante", l: 0, c: ["Mago", "Stregone", "Warlock", "Artefice"], d: "Booming Blade. Se il bersaglio si muove subisce danni da tuono." },
     { n: "Luci Danzanti", l: 0, c: ["Bardo", "Mago", "Stregone", "Artefice", "Magia Drow"], d: "Crea fino a 4 luci fioche mobili." },
     { n: "Luce", l: 0, c: ["Bardo", "Chierico", "Mago", "Stregone", "Artefice", "Patto: Il Celestiale", "Portatore di Luce"], d: "Oggetto emana luce intensa 6m e fioca 6m per 1 ora." },
-    { n: "Mano Magica", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock", "Artefice", "Telecinetico"], d: "Mano spettrale manipola oggetti entro 9m." },
+    { n: "Mano Magica", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock", "Artefice", "Telecinetico", "Origine: Mente Aberrante"], d: "Mano spettrale manipola oggetti entro 9m." },
     { n: "Messaggio", l: 0, c: ["Bardo", "Mago", "Stregone", "Artefice"], d: "Sussurri un messaggio a creatura entro 36m." },
     { n: "Modellare Acqua", l: 0, c: ["Druido", "Mago", "Stregone"], d: "Congeli, muovi o cambi colore all'acqua." },
     { n: "Prestidigitazione", l: 0, c: ["Bardo", "Mago", "Stregone", "Warlock", "Artefice"], d: "Effetti sensoriali minori, accendere fuochi, pulire, riscaldare." },
@@ -115,6 +115,7 @@ const SPELL_DB = [
     { n: "Silenzio", l: 2, c: ["Bardo", "Chierico", "Ranger", "Origine: Anima Divina", "Patto: L'Insondabile"], d: "Nessun suono in sfera 6m. Immunità danni tuono, no incantesimi verbali." },
     { n: "Suggestione", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock", "Dominio della Conoscenza"], d: "Costringe creatura a seguire un corso d'azione ragionevole." },
     { n: "Vedere Invisibilità", l: 2, c: ["Bardo", "Mago", "Stregone", "Warlock", "Dominio del Crepuscolo"], d: "Vedi creature invisibili ed eteree." },
+    { n: "Vortice Warp", l: 2, c: ["Stregone", "Warlock", "Artigliere", "Conclave: Camminatore dell'Orizzonte"], d: "Vortex Warp. Teletrasporta una creatura che vedi in un altro punto." },
     
     // --- LIVELLO 3 ---
     { n: "Animare Morti", l: 3, c: ["Chierico", "Mago", "Origine: Anima Divina", "Patto: Il Non Morto", "Dominio della Morte", "Giuramento Infranto"], d: "Crea scheletro o zombi da cadavere." },
@@ -123,12 +124,14 @@ const SPELL_DB = [
     { n: "Fame di Hadar", l: 3, c: ["Warlock", "Origine: Mente Aberrante"], d: "Sfera di oscurità e freddo/acido. Difficile uscirne." },
     { n: "Fulmine", l: 3, c: ["Mago", "Stregone", "Circolo della Terra", "Armaiolo"], d: "Linea 30m, 8d6 fulmine." },
     { n: "Immagine Maggiore", l: 3, c: ["Bardo", "Mago", "Stregone", "Warlock"], d: "Illusione completa (visiva, sonora, termica) in cubo 6m." },
+    { n: "Inviare", l: 3, c: ["Bardo", "Chierico", "Mago", "Origine: Mente Aberrante", "Patto: Il Grande Antico", "Dominio della Pace"], d: "Sending. Invii messaggio mentale 25 parole ovunque (anche altri piani)." },
     { n: "Invocare il Fulmine", l: 3, c: ["Druido", "Dominio della Tempesta", "Patto: L'Insondabile"], d: "Fulmini in area 3d10 ogni turno." },
     { n: "Lentezza", l: 3, c: ["Mago", "Stregone", "Warlock", "Dominio dell'Ordine", "Circolo della Terra"], d: "Rallenta fino a 6 creature. -2 CA e TS Des, 1 azione/turno." },
     { n: "Palla di Fuoco", l: 3, c: ["Mago", "Stregone", "Dominio della Luce", "Patto: L'Immondo", "Patto: Il Genio", "Artigliere"], d: "8d6 fuoco in raggio 6m." },
     { n: "Parola Guaritrice di Massa", l: 3, c: ["Chierico", "Origine: Anima Divina", "Alchimista"], d: "Cura 1d4+mod a 6 creature, Bonus Action." },
     { n: "Passo del Tuono", l: 3, c: ["Mago", "Stregone", "Warlock", "Armaiolo"], d: "Thunder Step. Teletrasporto 27m + 3d10 danni tuono dove eri." },
     { n: "Paura", l: 3, c: ["Bardo", "Mago", "Stregone", "Warlock", "Giuramento di Conquista", "Conclave: Cacciatore delle Tenebre"], d: "Cono 9m, creature lasciano cadere oggetti e fuggono." },
+    { n: "Protezione dall'Energia", l: 3, c: ["Chierico", "Druido", "Mago", "Ranger", "Stregone", "Artefice", "Origine: Anima Meccanica"], d: "Resistenza a un tipo di danno per 1 ora." },
     { n: "Respirare Sott'acqua", l: 3, c: ["Druido", "Ranger", "Mago", "Stregone", "Artefice"], d: "10 creature respirano acqua per 24h." },
     { n: "Rianimare Morti", l: 3, c: ["Bardo", "Chierico", "Paladino", "Ranger", "Druido", "Origine: Anima Divina", "Patto: Il Celestiale", "Alchimista"], d: "Rinascita (Revivify). Ritorna in vita creatura morta da <1 min (costo 300mo)." },
     { n: "Spiriti Guardiani", l: 3, c: ["Chierico", "Paladino", "Origine: Anima Divina", "Giuramento della Corona"], d: "Aura dannosa 3d8 (radiosi/necrotici) attorno a te." },
@@ -139,7 +142,10 @@ const SPELL_DB = [
     
     // --- LIVELLO 4 ---
     { n: "Bandimento", l: 4, c: ["Chierico", "Mago", "Paladino", "Stregone", "Warlock", "Giuramento degli Osservatori"], d: "Esilia una creatura su un altro piano (permanente se 1 min)." },
+    { n: "Evoca Aberrazione", l: 4, c: ["Warlock", "Mago", "Origine: Mente Aberrante"], d: "Summon Aberration. Evochi uno spirito aberrante che combatte per te." },
+    { n: "Evoca Costrutto", l: 4, c: ["Artefice", "Mago", "Origine: Anima Meccanica"], d: "Summon Construct. Evochi un golem di metallo, pietra o argilla." },
     { n: "Invisibilità Superiore", l: 4, c: ["Bardo", "Mago", "Stregone", "Warlock", "Dominio del Crepuscolo", "Patto: Il Signore Fatato", "Patto: Il Genio", "Patto: Il Non Morto", "Conclave: Cacciatore delle Tenebre"], d: "Invisibile anche se attacchi, per 1 min." },
+    { n: "Libertà di Movimento", l: 4, c: ["Bardo", "Chierico", "Druido", "Ranger", "Artefice", "Origine: Anima Meccanica"], d: "Ignori terreno difficile e paralisi/trattenuto." },
     { n: "Metamorfosi", l: 4, c: ["Bardo", "Druido", "Mago", "Stregone", "Dominio dell'Inganno"], d: "Trasforma creatura in bestia (Polymorph)." },
     { n: "Muro di Fuoco", l: 4, c: ["Druido", "Mago", "Stregone", "Dominio della Luce", "Patto: L'Immondo", "Patto: Il Celestiale", "Circolo del Fuoco Selvaggio", "Artigliere"], d: "Muro fa 5d8 fuoco a chi attraversa." },
     { n: "Occhio Arcano", l: 4, c: ["Chierico", "Mago", "Artefice", "Dominio della Conoscenza"], d: "Occhio invisibile che vola e trasmette visione." },
@@ -153,8 +159,9 @@ const SPELL_DB = [
     { n: "Blocca Mostri", l: 5, c: ["Bardo", "Mago", "Stregone", "Warlock", "Giuramento di Redenzione", "Giuramento di Vendetta", "Giuramento di Conquista"], d: "Paralizza qualsiasi creatura su TS Sag." },
     { n: "Guarigione Superiore", l: 5, c: ["Bardo", "Chierico", "Druido", "Origine: Anima Divina", "Patto: Il Celestiale", "Alchimista"], d: "Cura 4d8 + mod a creature multiple." },
     { n: "Legame Telepatico", l: 5, c: ["Bardo", "Mago", "Artefice", "Origine: Mente Aberrante", "Dominio della Pace"], d: "Rary's Telepathic Bond. Comunicazione telepatica per il gruppo." },
-    { n: "Muro di Forza", l: 5, c: ["Mago", "Armaiolo"], d: "Crea barriera indistruttibile." },
+    { n: "Muro di Forza", l: 5, c: ["Mago", "Armaiolo", "Origine: Anima Meccanica"], d: "Crea barriera indistruttibile." },
     { n: "Rianimare", l: 5, c: ["Bardo", "Chierico", "Paladino", "Origine: Anima Divina", "Alchimista"], d: "Raise Dead. Ritorna in vita morto da <10 giorni." },
+    { n: "Ristorare Superiore", l: 5, c: ["Bardo", "Chierico", "Druido", "Artefice", "Origine: Anima Meccanica", "Patto: Il Celestiale"], d: "Rimuove charme, pietrificazione, maledizioni, riduzioni caratteristiche." },
     { n: "Telecinesi", l: 5, c: ["Mago", "Stregone", "Origine: Mente Aberrante", "Patto: Il Grande Antico"], d: "Muovi oggetti o creature con la mente." }
 ];
 
